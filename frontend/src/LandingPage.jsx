@@ -195,6 +195,202 @@ export default function LandingPage({ onNavigate }) {
         </div>
       </section>
 
+      {/* Target Beneficiaries & Value Realization Section */}
+      <section style={{
+        maxWidth: '1280px',
+        margin: '0 auto',
+        padding: '80px 24px 40px'
+      }}>
+        <div style={{ textAlign: 'center', marginBottom: '56px' }}>
+          <div style={{
+            display: 'inline-flex',
+            alignItems: 'center',
+            gap: '8px',
+            padding: '4px 14px',
+            borderRadius: 'var(--radius-full)',
+            background: 'var(--stone-50)',
+            border: '1px solid var(--stone-100)',
+            fontSize: '0.8125rem',
+            fontWeight: 600,
+            color: 'var(--rose-700)',
+            marginBottom: '16px'
+          }}>
+            Organizational Impact & Value Realization
+          </div>
+          <h2 style={{ fontSize: '2.25rem', fontWeight: 700, color: 'var(--neutral-950)' }}>
+            Who Benefits & <span className="text-gradient">How Zenith Transforms Defense</span>
+          </h2>
+          <p style={{ color: 'var(--stone-700)', maxWidth: '680px', margin: '10px auto 0', fontSize: '1rem', lineHeight: 1.6 }}>
+            Bridging the communication and decision-making gap between security practitioners, engineering leaders, and the executive boardroom.
+          </p>
+        </div>
+
+        {/* 4 Beneficiaries Grid */}
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '24px', marginBottom: '56px' }}>
+          {/* Persona 1: CISOs & Board */}
+          <div className="card-glass" style={{ padding: '32px', display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }}>
+            <div>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '16px' }}>
+                <span style={{ fontSize: '2rem' }}>👔</span>
+                <span className="badge badge-critical">Executive Board</span>
+              </div>
+              <h3 style={{ fontSize: '1.2rem', color: 'var(--neutral-950)', marginBottom: '8px' }}>
+                CISOs & Board Directors
+              </h3>
+              <p style={{ fontSize: '0.875rem', color: 'var(--stone-700)', lineHeight: 1.6, marginBottom: '16px' }}>
+                <strong>The Challenge:</strong> Struggle to translate complex vulnerability acronyms (CVEs, CVSS) into dollar-denominated business risk.
+              </p>
+              <div style={{
+                background: 'var(--stone-50)',
+                border: '1px solid var(--stone-100)',
+                borderRadius: 'var(--radius-lg)',
+                padding: '14px',
+                fontSize: '0.8125rem',
+                color: 'var(--rose-900)',
+                lineHeight: 1.5
+              }}>
+                <strong>How Zenith Helps:</strong> Delivers financial loss quantification ($) and mathematical proof of Knapsack budget optimization for board justification.
+              </div>
+            </div>
+            <div style={{ marginTop: '20px', borderTop: '1px solid var(--stone-100)', paddingTop: '12px', fontSize: '0.75rem', fontWeight: 600, color: 'var(--rose-700)' }}>
+              ✓ Defensible Security ROI & Capital Efficiency
+            </div>
+          </div>
+
+          {/* Persona 2: SecOps & Security Engineers */}
+          <div className="card-glass" style={{ padding: '32px', display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }}>
+            <div>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '16px' }}>
+                <span style={{ fontSize: '2rem' }}>🛡️</span>
+                <span className="badge badge-high">SecOps & IR</span>
+              </div>
+              <h3 style={{ fontSize: '1.2rem', color: 'var(--neutral-950)', marginBottom: '8px' }}>
+                SecOps & Security Engineers
+              </h3>
+              <p style={{ fontSize: '0.875rem', color: 'var(--stone-700)', lineHeight: 1.6, marginBottom: '16px' }}>
+                <strong>The Challenge:</strong> Overwhelmed by thousands of unprioritized vulnerability scan alerts with no context on exploitability.
+              </p>
+              <div style={{
+                background: 'var(--stone-50)',
+                border: '1px solid var(--stone-100)',
+                borderRadius: 'var(--radius-lg)',
+                padding: '14px',
+                fontSize: '0.8125rem',
+                color: 'var(--rose-900)',
+                lineHeight: 1.5
+              }}>
+                <strong>How Zenith Helps:</strong> Correlates CVEs with real-time threat matrices and asset criticality to auto-generate rank-ordered mitigation directives.
+              </div>
+            </div>
+            <div style={{ marginTop: '20px', borderTop: '1px solid var(--stone-100)', paddingTop: '12px', fontSize: '0.75rem', fontWeight: 600, color: 'var(--rose-700)' }}>
+              ✓ 65% Faster Time-To-Remediation (MTTR)
+            </div>
+          </div>
+
+          {/* Persona 3: GRC & Compliance Officers */}
+          <div className="card-glass" style={{ padding: '32px', display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }}>
+            <div>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '16px' }}>
+                <span style={{ fontSize: '2rem' }}>📋</span>
+                <span className="badge badge-medium">GRC & Audit</span>
+              </div>
+              <h3 style={{ fontSize: '1.2rem', color: 'var(--neutral-950)', marginBottom: '8px' }}>
+                GRC & Compliance Officers
+              </h3>
+              <p style={{ fontSize: '0.875rem', color: 'var(--stone-700)', lineHeight: 1.6, marginBottom: '16px' }}>
+                <strong>The Challenge:</strong> Static annual audit spreadsheets become obsolete the moment new code or cloud infrastructure is deployed.
+              </p>
+              <div style={{
+                background: 'var(--stone-50)',
+                border: '1px solid var(--stone-100)',
+                borderRadius: 'var(--radius-lg)',
+                padding: '14px',
+                fontSize: '0.8125rem',
+                color: 'var(--rose-900)',
+                lineHeight: 1.5
+              }}>
+                <strong>How Zenith Helps:</strong> Continuous telemetry tracking mapped directly against NIST CSF and ISO 27001 standards with verifiable historical logs.
+              </div>
+            </div>
+            <div style={{ marginTop: '20px', borderTop: '1px solid var(--stone-100)', paddingTop: '12px', fontSize: '0.75rem', fontWeight: 600, color: '#047857' }}>
+              ✓ Always-On Continuous Audit Readiness
+            </div>
+          </div>
+
+          {/* Persona 4: DevOps & Cloud Architects */}
+          <div className="card-glass" style={{ padding: '32px', display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }}>
+            <div>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '16px' }}>
+                <span style={{ fontSize: '2rem' }}>⚙️</span>
+                <span className="badge badge-low">DevOps & Cloud</span>
+              </div>
+              <h3 style={{ fontSize: '1.2rem', color: 'var(--neutral-950)', marginBottom: '8px' }}>
+                DevOps & Cloud Architects
+              </h3>
+              <p style={{ fontSize: '0.875rem', color: 'var(--stone-700)', lineHeight: 1.6, marginBottom: '16px' }}>
+                <strong>The Challenge:</strong> Security controls often feel like blockers that slow down deployment velocity and microservice releases.
+              </p>
+              <div style={{
+                background: 'var(--stone-50)',
+                border: '1px solid var(--stone-100)',
+                borderRadius: 'var(--radius-lg)',
+                padding: '14px',
+                fontSize: '0.8125rem',
+                color: 'var(--rose-900)',
+                lineHeight: 1.5
+              }}>
+                <strong>How Zenith Helps:</strong> Pinpoints high-risk nodes (e.g. Swift broker vs public web proxy) to deploy targeted controls without friction.
+              </div>
+            </div>
+            <div style={{ marginTop: '20px', borderTop: '1px solid var(--stone-100)', paddingTop: '12px', fontSize: '0.75rem', fontWeight: 600, color: 'var(--rose-700)' }}>
+              ✓ Frictionless Zero-Trust Architecture
+            </div>
+          </div>
+        </div>
+
+        {/* Transformation Comparison Table */}
+        <div className="card-glass" style={{ padding: '36px', overflowX: 'auto' }}>
+          <h3 style={{ fontSize: '1.25rem', marginBottom: '8px', color: 'var(--neutral-950)' }}>
+            The Zenith Paradigm Shift: Before vs. After
+          </h3>
+          <p style={{ color: 'var(--stone-700)', fontSize: '0.875rem', marginBottom: '24px' }}>
+            How continuous quantitative risk modeling replaces outdated legacy security practices.
+          </p>
+
+          <table className="styled-table">
+            <thead>
+              <tr>
+                <th style={{ width: '25%' }}>Capability Dimension</th>
+                <th style={{ width: '37.5%', background: '#fff1f2', color: 'var(--red-600)' }}>Legacy Security Approach</th>
+                <th style={{ width: '37.5%', background: '#ecfdf5', color: '#047857' }}>Zenith Platform Approach</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td style={{ fontWeight: 600 }}>Risk Evaluation</td>
+                <td style={{ color: 'var(--stone-700)' }}>Subjective "Red/Yellow/Green" guesswork in static spreadsheets</td>
+                <td style={{ fontWeight: 600, color: 'var(--neutral-950)' }}>Mathematical 0–100 score + Dollar Expected Financial Loss ($)</td>
+              </tr>
+              <tr>
+                <td style={{ fontWeight: 600 }}>Budget Allocation</td>
+                <td style={{ color: 'var(--stone-700)' }}>Intuition-based tool purchasing leading to redundant spend</td>
+                <td style={{ fontWeight: 600, color: 'var(--neutral-950)' }}>0/1 Knapsack Optimization for maximum risk reduction per dollar</td>
+              </tr>
+              <tr>
+                <td style={{ fontWeight: 600 }}>Threat Modeling</td>
+                <td style={{ color: 'var(--stone-700)' }}>Static vulnerability reports reviewed once per quarter</td>
+                <td style={{ fontWeight: 600, color: 'var(--neutral-950)' }}>Real-time threat matrix correlation with continuous telemetry</td>
+              </tr>
+              <tr>
+                <td style={{ fontWeight: 600 }}>Attack Simulation</td>
+                <td style={{ color: 'var(--stone-700)' }}>Infrequent manual penetration tests with delayed reports</td>
+                <td style={{ fontWeight: 600, color: 'var(--neutral-950)' }}>On-demand Monte Carlo simulations (Ransomware, DDoS, Insider)</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+
       {/* Interactive Budget & Risk Calculator Section */}
       <section style={{ maxWidth: '1280px', margin: '0 auto', padding: '80px 24px' }}>
         <div className="card-glass" style={{
