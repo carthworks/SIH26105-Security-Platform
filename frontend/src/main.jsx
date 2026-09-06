@@ -5,6 +5,7 @@ import LandingPage from './LandingPage';
 import HowItWorksPage from './HowItWorksPage';
 import RiskHeatmap from './RiskHeatmap';
 import VisualAnalytics from './VisualAnalytics';
+import { NotFound404, ServerError500, ErrorBoundary } from './ErrorPages';
 
 // High-fidelity fallback dataset for cyber risk quantification
 const FALLBACK_DATA = {
@@ -70,9 +71,13 @@ function getBadgeClass(level) {
 
 function parseHash(hash) {
   const clean = (hash || '').replace('#', '').toLowerCase();
-  if (clean === 'home' || clean === 'landing') return { page: 'landing', tab: 'overview' };
+  if (!clean || clean === 'home' || clean === 'landing') return { page: 'landing', tab: 'overview' };
   if (clean === 'how-it-works' || clean === 'help' || clean === 'docs') return { page: 'how-it-works', tab: 'overview' };
   
+  // Explicit error pages
+  if (clean === '404' || clean === 'not-found') return { page: '404', tab: 'overview' };
+  if (clean === '500' || clean === 'server-error' || clean === 'error') return { page: '500', tab: 'overview' };
+
   // Dashboard hashes
   if (clean === 'heatmap' || clean === 'matrix') return { page: 'dashboard', tab: 'matrix' };
   if (clean === 'vuln' || clean === 'vulns' || clean === 'vulnerabilities') return { page: 'dashboard', tab: 'vulns' };
@@ -84,8 +89,8 @@ function parseHash(hash) {
   if (clean === 'rec' || clean === 'recommendations') return { page: 'dashboard', tab: 'recommendations' };
   if (clean === 'dashboard' || clean === 'risk') return { page: 'dashboard', tab: 'overview' };
 
-  // Default to landing page if no hash or unrecognized
-  return { page: 'landing', tab: 'overview' };
+  // If unrecognized hash was given, route to 404
+  return { page: '404', tab: 'overview' };
 }
 
 function App() {
@@ -457,7 +462,17 @@ function App() {
         <HowItWorksPage onNavigate={(p) => navigateTo(p)} />
       )}
 
-      {/* PAGE 3: DASHBOARD */}
+      {/* PAGE 3: 404 NOT FOUND PAGE */}
+      {route.page === '404' && (
+        <NotFound404 onNavigate={(p, t, h) => navigateTo(p, t, h)} />
+      )}
+
+      {/* PAGE 4: 500 SERVER ERROR PAGE */}
+      {route.page === '500' && (
+        <ServerError500 onRetry={() => window.location.reload()} onNavigate={(p, t, h) => navigateTo(p, t, h)} />
+      )}
+
+      {/* PAGE 5: DASHBOARD */}
       {route.page === 'dashboard' && (
         <main style={{ maxWidth: '1280px', margin: '0 auto', padding: '32px 24px', width: '100%', flex: 1 }}>
           {/* KPI Metrics Row */}
@@ -1018,4 +1033,9 @@ function App() {
   );
 }
 
-ReactDOM.render(<App />, document.getElementById('root'));
+ReactDOM.render(
+  <ErrorBoundary>
+    <App />
+  </ErrorBoundary>,
+  document.getElementById('root')
+);
