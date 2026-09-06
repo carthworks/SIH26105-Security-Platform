@@ -1,0 +1,313 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>SIH26105 - AI-Powered Cyber Risk Quantification Platform</title>
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+  <style>
+    :root {
+      --text: #6b6375;
+      --text-h: #08060d;
+      --bg: #fff;
+      --border: #e5e4e7;
+      --accent: #aa3bff;
+      --accent-bg: rgba(170, 59, 255, 0.1);
+      --shadow: rgba(0, 0, 0, 0.1) 0 10px 15px -3px, rgba(0, 0, 0, 0.05) 0 4px 6px -2px;
+      --sans: system-ui, 'Segoe UI', Roboto, sans-serif;
+    }
+
+    * { box-sizing: borderbox; }
+
+    body {
+      margin: 0;
+      font: 18px/145% var(--sans);
+      color-scheme: light dark;
+      color: var(--text);
+      background: var(--bg);
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
+    }
+
+    #root {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 20px;
+    }
+
+    h1 {
+      font-size: 32px;
+      font-weight: 500;
+      color: var(--text-h);
+      letter-spacing: -0.96px;
+      margin-bottom: 32px;
+    }
+
+    .card {
+      background: white;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 24px;
+      margin: 16px 0;
+      box-shadow: 0 10px 15px -3px rgba(0,0,0,0.1), 0 4px 6px -2px rgba(0,0,0,0.05);
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+      gap: 16px;
+    }
+
+    .table-wrapper table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 12px;
+    }
+    .table-wrapper th, .table-wrapper td {
+      padding: 8px;
+      border: 1px solid var(--border);
+      text-align: left;
+    }
+    .table-wrapper th {
+      background: #f8f9fa;
+      color: var(--text-h);
+    }
+
+    .nav {
+      background: #f8f9fa;
+      padding: 16px 24px;
+      border-bottom: 1px solid var(--border);
+      margin: -20px -20px 24px;
+    }
+
+    .nav a {
+      color: #6b6375;
+      text-decoration: none;
+      padding: 8px 12px;
+      border-radius: 4px;
+      margin: 0 4px;
+      background: #f0f0f0;
+      display: inline-block;
+    }
+
+    .nav a.active, .nav a:hover {
+      background: #e5e4e7;
+      color: var(--text-h);
+    }
+
+    .btn {
+      display: inline-block;
+      padding: 8px 16px;
+      background: var(--accent);
+      color: white;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 14px;
+      margin: 4px;
+    }
+
+    .btn-secondary {
+      background: #6b6375;
+      color: white;
+    }
+
+    .loading {
+      text-align: center;
+      padding: 40px;
+      color: var(--text);
+    }
+
+    .error {
+      color: #dc2626;
+      padding: 20px;
+      text-align: center;
+    }
+
+    .chip {
+      display: inline-block;
+      padding: 4px 8px;
+      background: #e5e4e7;
+      border-radius: 4px;
+      font-size: 12px;
+      margin: 2px;
+    }
+  </style>
+</head>
+<body>
+  <div id="root">
+    <div class="nav">
+      <a href="#" class="active">Assets</a>
+      <a href="#vuln">Vulns</a>
+      <a href="#threat">Threats</a>
+      <a href="#ctrl">Controls</a>
+      <a href="#risk">Risk</a>
+      <a href="#invest">Invest</a>
+      <a href="#scenario">Scenario</a>
+      <a href="#rec">Recs</a>
+    </div>
+
+    <div id="loading" class="loading">
+      <h2>SIH26105 Platform</h2>
+      <p>Loading data from backend...</p>
+    </div>
+
+    <div id="error" class="error" style="display: none;">
+      <h2>Error loading data</h2>
+      <p>Could not connect to the backend API.</p>
+      <button id="retry" class="btn btn-secondary" style="margin-top: 10px;">Retry</button>
+    </div>
+
+    <div id="content" style="display: none;"></div>
+  </div>
+
+  <script>
+    const API_BASE = 'http://127.0.0.1:8000';
+    const state = {
+      assets: [], vulns: [], threats: [], controls: [],
+      riskAssessments: [], invOpts: [], scenarios: [],
+      riskLevels: {}, recs: []
+    };
+    const root = document.getElementById('root');
+    const content = document.getElementById('content');
+    const loading = document.getElementById('loading');
+    const errorDiv = document.getElementById('error');
+    const retryBtn = document.getElementById('retry');
+
+    function showLoading() { loading.style.display='block'; content.style.display='none'; errorDiv.style.display='none'; }
+    function showError() { loading.style.display='none'; errorDiv.style.display='block'; content.style.display='none'; }
+    function showContent() { loading.style.display='none'; errorDiv.style.display='none'; content.style.display='block'; }
+
+    async function fetchAPI(path) {
+      const res = await fetch(`${API_BASE}${path}`);
+      if (!res.ok) throw new Error(`HTTP ${res.status}`);
+      return res.json();
+    }
+
+    async function init() {
+      showLoading();
+      try {
+        const [
+          assets, vulns, threats, controls,
+          riskAssessments, invOpts, scenarios, recs
+        ] = await Promise.all([
+          fetchAPI('/api/v1/assets'),
+          fetchAPI('/api/v1/vulnerabilities'),
+          fetchAPI('/api/v1/threats'),
+          fetchAPI('/api/v1/controls'),
+          fetchAPI('/api/v1/risk-assessments'),
+          fetchAPI('/api/v1/investment-options'),
+          fetchAPI('/api/v1/scenarios'),
+          fetchAPI('/api/v1/recommendations/prioritized')
+        ]);
+
+        state.assets = assets; state.vulns = vulns; state.threats = threats;
+        state.controls = controls; state.riskAssessments = riskAssessments;
+        state.invOpts = invOpts; state.scenarios = scenarios; state.recs = recs;
+
+        for (const a of assets) {
+          const r = await fetchAPI(`/api/v1/risk/calculate/${a.id}`);
+          if (r) state.riskLevels[a.id] = r.risk_level;
+        }
+
+        showContent();
+        renderUI();
+      } catch (err) { console.error(err); showError(); }
+    }
+
+    function renderUI() {
+      const { assets, vulns, threats, controls, riskAssessments, invOpts, scenarios, recs, riskLevels } = state;
+
+      // Nav
+      const nav = document.createElement('div');
+      nav.className = 'nav';
+      nav.innerHTML = '<a href="#" class="active">Assets</a><a href="#vuln">Vulns</a><a href="#threat">Threats</a><a href="#ctrl">Controls</a><a href="#risk">Risk</a><a href="#invest">Invest</a><a href="#scenario">Scenario</a><a href="#rec">Recs</a>';
+      root.prepend(nav);
+
+      // Nav active handling
+      document.querySelectorAll('.nav a').forEach(a => {
+        a.addEventListener('click', () => document.querySelectorAll('.nav a').forEach(x => x.classList.remove('active')) || a.classList.add('active');
+      });
+
+      function makeSection(title, content) {
+        const s = document.createElement('section');
+        s.style.maxWidth = '1200px';
+        s.style.margin = '24px auto';
+        s.innerHTML = `<h2>${title}</h2>${content}`;
+        return s;
+      }
+
+      function chip(label) { return `<span class="chip">${label}</span>`; }
+
+      // Assets
+      if (document.querySelector('.nav a[href="#assets"]').classList.contains('active') || !document.querySelector('.nav a[href="#vuln"]')) {
+        const cards = assets.map(a => `
+          <div class="card">
+            <h3>${a.name}</h3>
+            <p>Criticality: <span class="chip">${a.criticality}</span> | Risk: <span class="chip" style="color: ${riskLevels[a.id] === 'Critical' ? '#dc2626' : riskLevels[a.id] === 'High' ? '#f59e0b' : riskLevels[a.id] === 'Medium' ? '#eab308' : '#10b981'}">
+              ${riskLevels[a.id] || '—'}
+            </span></p>
+            <button class="btn" onclick="window.open('/api/v1/risk/calculate/${a.id}')">View Risk</button>
+          </div>
+        `).join('');
+        root.appendChild(makeSection('Risk Overview', `<div class="grid">${cards.join('')}</div>`));
+      }
+
+      // Vulnerabilities
+      if (document.querySelector('.nav a[href="#vuln"]').classList.contains('active') || !document.querySelector('.nav a[href="#assets"]').classList.contains('active')) {
+        const list = vulns.map(v => `<div class="card"><h3>${v.name}</h3><p>Severity: <span class="chip">${v.severity}/10</span> | Asset: ${v.affected_asset_id}</p></div>`).join('');
+        root.appendChild(makeSection('Vulnerabilities', `<div class="grid">${list.join('')}</div>`));
+      }
+
+      // Threats
+      if (document.querySelector('.nav a[href="#threat"]').classList.contains('active') || !document.querySelector('.nav a[href="#assets"]').classList.contains('active') && !document.querySelector('.nav a[href="#vuln"]')) {
+        const list = threats.map(t => `<div class="card"><h3>${t.name}</h3><p>Likelihood: ${t.likelihood}/5</p></div>`).join('');
+        root.appendChild(makeSection('Threats', `<div class="grid">${list.join('')}</div>`));
+      }
+
+      // Controls
+      if (document.querySelector('.nav a[href="#ctrl"]').classList.contains('active') || !document.querySelector('.nav a[href="#assets"]').classList.contains('active') && !document.querySelector('.nav a[href="#vuln"]') && !document.querySelector('.nav a[href="#threat"]')) {
+        const list = controls.map(c => `<div class="card"><h3>${c.name}</h3><p>Effectiveness: <span class="chip">${c.effectiveness}/10</span> | Cost: $${c.cost} | Asset: ${c.target_asset_id}</p></div>`).join('');
+        root.appendChild(makeSection('Controls', `<div class="grid">${list.join('')}</div>`));
+      }
+
+      // Risk Assessments
+      if (document.querySelector('.nav a[href="#risk"]').classList.contains('active') || !document.querySelector('.nav a[href="#assets"]').classList.contains('active') && !document.querySelector('.nav a[href="#vuln"]') && !document.querySelector('.nav a[href="#threat"]') && !document.querySelector('.nav a[href="#ctrl"]')) {
+        const rows = riskAssessments.map(ra => {
+          const asset = assets.find(a => a.id === ra.asset_id);
+          const rl = riskLevels[ra.asset_id] || '—';
+          const color = rl === 'Critical' ? '#dc2626' : rl === 'High' ? '#f59e0b' : rl === 'Medium' ? '#eab308' : '#10b981';
+          return `<tr><td>${asset ? asset.name : 'Asset '+ra.asset_id}</td><td>${ra.current_risk_score}</td><td><span style="color: ${color}; font-weight: bold;">${rl}</span></td></tr>`;
+        }).join('');
+        root.appendChild(makeSection('Risk Assessments', `<table class="table-wrapper"><thead><tr><th>Asset</th><th>Risk Score</th><th>Risk Level</th></tr></thead><tbody>${rows.join('')}</tbody></table>`));
+      }
+
+      // Investment
+      if (document.querySelector('.nav a[href="#invest"]').classList.contains('active') || !document.querySelector('.nav a[href="#assets"]').classList.contains('active') && !document.querySelector('.nav a[href="#vuln"]') && !document.querySelector('.nav a[href="#threat"]') && !document.querySelector('.nav a[href="#ctrl"]') && !document.querySelector('.nav a[href="#risk"]')) {
+        const budget = 50000;
+        const selected = invOpts.filter(o => o.selected).reduce((s,o) => s + o.cost, 0) || 0;
+        root.appendChild(makeSection('Investment Optimization', `<p>Budget: $${budget:,}</p><p>Selected: $${selected:,}</p><div style="margin: 16px 0;">${invOpts.map(o => `<label style="display: block; padding: 6px; border: 1px solid #e5e4e7; margin: 4px 0;"><input type="checkbox" data-cost="${o.cost}" data-effectiveness="${o.expected_effectiveness}" class="ctrl-check" ${o.selected ? 'checked' : ''} style="margin-right: 6px; transform: scale(1.2); vertical-align: middle;"> ${o.name} - Eff: ${o.expected_effectiveness}/10, Cost: $${o.cost}</label>`).join('')}</div><p>Total: $${selected} / $${budget}</p><button class="btn" onclick="document.querySelectorAll('.ctrl-check:checked').length > 0 ? alert('Selected: ' + document.querySelectorAll('.ctrl-check:checked').length + ' controls, $' + Array.from(document.querySelectorAll('.ctrl-check:checked')).reduce((s,c) => s + parseInt(c.getAttribute('data-cost')), 0) : alert('Select controls first'));">Optimize Investment</button>`
+        ));
+      }
+
+      // Scenarios
+      if (document.querySelector('.nav a[href="#scenario"]').classList.contains('active') || !document.querySelector('.nav a[href="#assets"]').classList.contains('active') && !document.querySelector('.nav a[href="#vuln"]') && !document.querySelector('.nav a[href="#ctrl"]') && !document.querySelector('.nav a[href="#risk"]') && !document.querySelector('.nav a[href="#invest"]')) {
+        const rows = scenarios.map(s => `<tr><td>${s.name}</td><td>${s.risk_before}</td><td>${s.risk_after}</td><td>${s.cost}</td><td>${s.risk_reduction}</td></tr>`).join('');
+        root.appendChild(makeSection('Scenario Analysis', `<table class="table-wrapper"><thead><tr><th>Scenario</th><th>Risk Before</th><th>Risk After</th><th>Cost</th><th>Reduction</th></tr></thead><tbody>${rows.join('')}</tbody></table>`));
+      }
+
+      // Recommendations
+      if (document.querySelector('.nav a[href="#rec"]').classList.contains('active') || !document.querySelector('.nav a[href="#assets"]').classList.contains('active') && !document.querySelector('.nav a[href="#vuln"]') && !document.querySelector('.nav a[href="#ctrl"]') && !document.querySelector('.nav a[href="#risk"]') && !document.querySelector('.nav a[href="#invest"]') && !document.querySelector('.nav a[href="#scenario"]')) {
+        const urgencyColors = { Critical: '#dc2626', High: '#f59e0b', Medium: '#eab308', Low: '#10b981' };
+        const recs = recs.map(r => `<tr><td>${r.asset_name}</td><td><span style="color: ${urgencyColors[r.risk_level]};">${r.risk_level}</span></td><td><span style="color: ${urgencyColors[r.urgency]};">${r.urgency}</span></td><td>${r.recommendation || '—'}</td></tr>`).join('');
+        root.appendChild(makeSection('Prioritized Recommendations', `<table class="table-wrapper"><thead><tr><th>Asset</th><th>Risk Level</th><th>Urgency</th><th>Recommendation</th></tr></thead><tbody>${recs.join('')}</tbody></table>`));
+      }
+
+      // Highlight active nav
+      document.querySelectorAll('.nav a').forEach(a => a.classList.remove('active'));
+    }
+
+    window.addEventListener('load', init);
+  </script>
+</body>
+</html>

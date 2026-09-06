@@ -1,0 +1,213 @@
+import React, { useState } from 'react';
+
+export default function HowItWorksPage({ onNavigate }) {
+  const [openFaq, setOpenFaq] = useState({ 0: true });
+
+  const toggleFaq = (idx) => {
+    setOpenFaq(prev => ({
+      ...prev,
+      [idx]: !prev[idx]
+    }));
+  };
+
+  const steps = [
+    {
+      num: 1,
+      title: 'Enterprise Asset Ingestion & Valuation',
+      desc: 'Zenith maps digital infrastructure (APIs, databases, payment brokers, web portals), assigning criticality tiers (Critical, High, Medium, Low) and financial business value estimates.'
+    },
+    {
+      num: 2,
+      title: 'Threat Matrix & CVE Correlation',
+      desc: 'Discovered vulnerabilities (CVSS 3.1) are correlated with adversary threat profiles (likelihood, attack surfaces, and historical breach data) to quantify real-world exploitability.'
+    },
+    {
+      num: 3,
+      title: 'FAIR-Inspired Risk Quantification Engine',
+      desc: 'Calculates a normalized 0-100 risk score per asset by multiplying vulnerability severity, threat likelihood, and asset criticality, attenuated by active defensive controls.'
+    },
+    {
+      num: 4,
+      title: 'Knapsack Portfolio Investment Optimization',
+      desc: 'Utilizes a dynamic programming 0/1 Knapsack algorithm to determine the mathematically optimal combination of security safeguards that yields maximum risk reduction for a given budget.'
+    },
+    {
+      num: 5,
+      title: 'Monte Carlo Stress-Testing & Directives',
+      desc: 'Simulates cyber attack scenarios (Ransomware, DDoS, Insider exfiltration) against pre- and post-control states, generating prioritized mitigation playbooks for engineering teams.'
+    }
+  ];
+
+  const faqs = [
+    {
+      q: 'How does Zenith quantify cyber risk into a 0-100 score?',
+      a: 'Zenith uses a multi-factor formula inspired by the FAIR (Factor Analysis of Information Risk) framework. It combines Asset Criticality (weight), Vulnerability Severity (CVSS v3.1), and Threat Likelihood (1-5 scale), discounted by existing defensive Control Effectiveness.'
+    },
+    {
+      q: 'What is the Knapsack Optimization algorithm and why is it used?',
+      a: 'Security budgets are finite. Rather than randomly purchasing tools, the 0/1 Knapsack optimizer calculates the exact combination of security controls (WAF, Zero-Trust, EDR, IAM) that delivers the maximum total risk reduction percentage without exceeding your specified budget cap.'
+    },
+    {
+      q: 'How do Scenario Simulations work?',
+      a: 'The scenario engine evaluates specific threat campaign models (e.g., FIN7 Ransomware). It compares the asset risk posture before security investment vs. after applying targeted controls to quantify expected loss avoided.'
+    },
+    {
+      q: 'How do I resolve backend port conflicts (Port 8000 vs 8001)?',
+      a: 'If another process is using port 8000 on Windows, run the backend on port 8001: "python -m uvicorn zenith_backend.main:app --reload --port 8001". The frontend automatically probes both ports 8001 and 8000.'
+    },
+    {
+      q: 'How can I integrate Zenith with our existing SIEM or vulnerability scanners?',
+      a: 'Zenith provides standard RESTful endpoints under /api/v1/ (Assets, Vulnerabilities, Threats, Controls). You can push findings from scanners like Nessus, Qualys, or Snyk directly via POST requests.'
+    }
+  ];
+
+  return (
+    <div style={{ maxWidth: '1280px', margin: '0 auto', padding: '48px 24px 80px' }}>
+      {/* Page Header */}
+      <div style={{ textAlign: 'center', marginBottom: '56px' }}>
+        <div style={{
+          display: 'inline-flex',
+          alignItems: 'center',
+          gap: '8px',
+          padding: '4px 14px',
+          borderRadius: 'var(--radius-full)',
+          background: 'var(--stone-50)',
+          border: '1px solid var(--stone-100)',
+          fontSize: '0.8125rem',
+          fontWeight: 600,
+          color: 'var(--rose-700)',
+          marginBottom: '16px'
+        }}>
+          Architecture & Methodology Guide
+        </div>
+        <h1 style={{ fontSize: '2.5rem', fontWeight: 700, color: 'var(--neutral-950)' }}>
+          How <span className="text-gradient">Zenith</span> Works
+        </h1>
+        <p style={{ color: 'var(--stone-700)', maxWidth: '680px', margin: '12px auto 0', fontSize: '1.05rem', lineHeight: 1.6 }}>
+          A technical walkthrough of our quantitative risk scoring models, knapsack optimization algorithms, and automated defense pipelines.
+        </p>
+      </div>
+
+      {/* 5-Stage Workflow Pipeline */}
+      <div className="card-glass" style={{ padding: '36px', marginBottom: '48px' }}>
+        <h2 style={{ fontSize: '1.5rem', marginBottom: '8px' }}>End-to-End Quantification Pipeline</h2>
+        <p style={{ color: 'var(--stone-700)', fontSize: '0.875rem', marginBottom: '32px' }}>
+          From raw vulnerability feeds to executive capital allocation decisions.
+        </p>
+
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
+          {steps.map((step) => (
+            <div key={step.num} style={{
+              display: 'flex',
+              gap: '20px',
+              alignItems: 'flex-start',
+              padding: '20px',
+              borderRadius: 'var(--radius-xl)',
+              background: 'var(--stone-50)',
+              border: '1px solid var(--stone-100)'
+            }}>
+              <div className="step-number">{step.num}</div>
+              <div>
+                <h3 style={{ fontSize: '1.125rem', color: 'var(--neutral-950)', marginBottom: '6px' }}>
+                  {step.title}
+                </h3>
+                <p style={{ fontSize: '0.875rem', color: 'var(--stone-700)', lineHeight: 1.6 }}>
+                  {step.desc}
+                </p>
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {/* Mathematical Formulations Section */}
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(340px, 1fr))', gap: '24px', marginBottom: '48px' }}>
+        {/* Math Card 1 */}
+        <div className="card-glass" style={{ padding: '32px' }}>
+          <span className="badge badge-high" style={{ marginBottom: '12px' }}>Quantitative Scoring Model</span>
+          <h3 style={{ fontSize: '1.25rem', marginBottom: '12px' }}>Asset Risk Score Equation</h3>
+          <p style={{ fontSize: '0.875rem', color: 'var(--stone-700)', marginBottom: '16px' }}>
+            Combines normalized threat likelihood, vulnerability severity, and defensive control mitigation:
+          </p>
+          <div className="formula-card">
+            <code>
+              Risk(A) = Criticality(A) × Σ [ CVSS(v) × Likelihood(t) ] × [ 1 - Efficiency(C) ]
+            </code>
+          </div>
+          <p style={{ fontSize: '0.8125rem', color: 'var(--stone-700)', marginTop: '14px' }}>
+            • <strong>Criticality</strong>: Weight factor [1.0 (Low) to 3.0 (Critical)]<br />
+            • <strong>Efficiency(C)</strong>: Attenuation coefficient of active controls [0.0 to 0.95]
+          </p>
+        </div>
+
+        {/* Math Card 2 */}
+        <div className="card-glass" style={{ padding: '32px' }}>
+          <span className="badge badge-low" style={{ marginBottom: '12px' }}>Budget Optimization Algorithm</span>
+          <h3 style={{ fontSize: '1.25rem', marginBottom: '12px' }}>0/1 Knapsack Optimization</h3>
+          <p style={{ fontSize: '0.875rem', color: 'var(--stone-700)', marginBottom: '16px' }}>
+            Maximizes the sum of security ROI across discrete controls subject to financial constraints:
+          </p>
+          <div className="formula-card">
+            <code>
+              Maximize: Σ ( RiskReduction_i · x_i )<br />
+              Subject to: Σ ( Cost_i · x_i ) ≤ Budget<br />
+              Where x_i ∈ {'{0, 1}'}
+            </code>
+          </div>
+          <p style={{ fontSize: '0.8125rem', color: 'var(--stone-700)', marginTop: '14px' }}>
+            • <strong>x_i = 1</strong>: Deploy control safeguard<br />
+            • <strong>x_i = 0</strong>: Defer or reject control package
+          </p>
+        </div>
+      </div>
+
+      {/* Frequently Asked Questions */}
+      <div className="card-glass" style={{ padding: '36px', marginBottom: '48px' }}>
+        <h2 style={{ fontSize: '1.5rem', marginBottom: '8px' }}>Frequently Asked Questions & Help</h2>
+        <p style={{ color: 'var(--stone-700)', fontSize: '0.875rem', marginBottom: '28px' }}>
+          Common questions regarding installation, model assumptions, and troubleshooting.
+        </p>
+
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
+          {faqs.map((faq, i) => {
+            const isOpen = !!openFaq[i];
+            return (
+              <div key={i} className="faq-item" onClick={() => toggleFaq(i)} style={{ cursor: 'pointer' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                  <h3 style={{ fontSize: '1rem', fontWeight: 600, color: 'var(--neutral-950)' }}>
+                    {faq.q}
+                  </h3>
+                  <span style={{ fontSize: '1.25rem', color: 'var(--rose-600)', fontWeight: 700, marginLeft: '12px' }}>
+                    {isOpen ? '−' : '+'}
+                  </span>
+                </div>
+                {isOpen && (
+                  <p style={{ fontSize: '0.875rem', color: 'var(--stone-700)', marginTop: '12px', lineHeight: 1.6 }}>
+                    {faq.a}
+                  </p>
+                )}
+              </div>
+            );
+          })}
+        </div>
+      </div>
+
+      {/* CTA Box */}
+      <div style={{
+        textAlign: 'center',
+        padding: '36px',
+        borderRadius: 'var(--radius-2xl)',
+        background: 'var(--stone-50)',
+        border: '1px solid var(--stone-100)'
+      }}>
+        <h3 style={{ fontSize: '1.25rem', marginBottom: '8px' }}>Explore the Live Environment</h3>
+        <p style={{ color: 'var(--stone-700)', fontSize: '0.875rem', marginBottom: '20px' }}>
+          Try running optimization calculations and scenario simulations with real data.
+        </p>
+        <button className="btn-primary" onClick={() => onNavigate('dashboard')}>
+          Launch Interactive Dashboard →
+        </button>
+      </div>
+    </div>
+  );
+}
