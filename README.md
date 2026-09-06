@@ -2,6 +2,10 @@
 
 **SIH26105 Security Platform** — Continuous cyber risk posture quantification, threat intelligence modeling, and data-driven security investment optimization.
 
+<p align="center">
+  <img src="./docs/dashboard-preview.png" alt="Zenith Platform Dashboard Preview" width="100%" />
+</p>
+
 ---
 
 ## 🌟 Key Features
