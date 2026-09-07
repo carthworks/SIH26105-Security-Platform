@@ -1,63 +1,120 @@
 import React, { useEffect, useRef, useState } from 'react';
 
-// Geographic continental dot clusters (lat, lon coordinates)
-const CONTINENT_POINTS = [
+// High-Definition Continental Polygons for Precise Rasterization & Coastline Contours
+const CONTINENT_POLYGONS = [
   // North America
-  { lat: 45, lon: -100 }, { lat: 50, lon: -110 }, { lat: 40, lon: -95 }, { lat: 35, lon: -85 },
-  { lat: 42, lon: -71 }, { lat: 38, lon: -122 }, { lat: 30, lon: -90 }, { lat: 55, lon: -120 },
-  { lat: 60, lon: -140 }, { lat: 32, lon: -115 }, { lat: 25, lon: -80 }, { lat: 48, lon: -80 },
-  { lat: 52, lon: -105 }, { lat: 37, lon: -105 }, { lat: 44, lon: -123 }, { lat: 20, lon: -100 },
-  { lat: 65, lon: -150 }, { lat: 43, lon: -79 }, { lat: 29, lon: -95 }, { lat: 33, lon: -84 },
-  
+  [
+    { lat: 72, lon: -160 }, { lat: 70, lon: -130 }, { lat: 60, lon: -95 }, { lat: 62, lon: -65 },
+    { lat: 50, lon: -55 }, { lat: 44, lon: -66 }, { lat: 30, lon: -81 }, { lat: 25, lon: -80 },
+    { lat: 29, lon: -89 }, { lat: 26, lon: -97 }, { lat: 21, lon: -97 }, { lat: 15, lon: -92 },
+    { lat: 8, lon: -77 }, { lat: 10, lon: -85 }, { lat: 18, lon: -105 }, { lat: 24, lon: -110 },
+    { lat: 34, lon: -120 }, { lat: 48, lon: -125 }, { lat: 60, lon: -140 }, { lat: 66, lon: -168 },
+    { lat: 72, lon: -160 }
+  ],
+  // Greenland
+  [
+    { lat: 78, lon: -70 }, { lat: 83, lon: -30 }, { lat: 75, lon: -20 }, { lat: 65, lon: -40 },
+    { lat: 60, lon: -45 }, { lat: 70, lon: -55 }, { lat: 78, lon: -70 }
+  ],
   // South America
-  { lat: -10, lon: -55 }, { lat: -15, lon: -47 }, { lat: -23, lon: -46 }, { lat: -34, lon: -58 },
-  { lat: 4, lon: -73 }, { lat: -12, lon: -77 }, { lat: -2, lon: -60 }, { lat: -20, lon: -65 },
-  { lat: -30, lon: -60 }, { lat: -40, lon: -68 }, { lat: 0, lon: -50 }, { lat: -8, lon: -35 },
-  
+  [
+    { lat: 12, lon: -72 }, { lat: 8, lon: -60 }, { lat: -2, lon: -44 }, { lat: -8, lon: -35 },
+    { lat: -23, lon: -42 }, { lat: -34, lon: -54 }, { lat: -45, lon: -65 }, { lat: -55, lon: -68 },
+    { lat: -50, lon: -74 }, { lat: -33, lon: -72 }, { lat: -18, lon: -71 }, { lat: -5, lon: -81 },
+    { lat: 4, lon: -77 }, { lat: 12, lon: -72 }
+  ],
   // Europe
-  { lat: 51, lon: 0 }, { lat: 48, lon: 2 }, { lat: 52, lon: 13 }, { lat: 41, lon: 12 },
-  { lat: 40, lon: -3 }, { lat: 55, lon: 37 }, { lat: 59, lon: 18 }, { lat: 60, lon: 10 },
-  { lat: 45, lon: 9 }, { lat: 50, lon: 20 }, { lat: 47, lon: 19 }, { lat: 56, lon: 24 },
-  { lat: 53, lon: -6 }, { lat: 38, lon: 23 }, { lat: 46, lon: 25 }, { lat: 58, lon: 26 },
-
+  [
+    { lat: 36, lon: -6 }, { lat: 43, lon: -9 }, { lat: 48, lon: -5 }, { lat: 54, lon: 8 },
+    { lat: 58, lon: 6 }, { lat: 71, lon: 26 }, { lat: 68, lon: 40 }, { lat: 60, lon: 30 },
+    { lat: 54, lon: 20 }, { lat: 45, lon: 30 }, { lat: 40, lon: 26 }, { lat: 36, lon: 22 },
+    { lat: 38, lon: 15 }, { lat: 44, lon: 12 }, { lat: 43, lon: 7 }, { lat: 36, lon: -6 }
+  ],
+  // United Kingdom & Ireland
+  [
+    { lat: 58, lon: -5 }, { lat: 58, lon: -2 }, { lat: 51, lon: 1 }, { lat: 50, lon: -5 },
+    { lat: 55, lon: -6 }, { lat: 58, lon: -5 }
+  ],
   // Africa
-  { lat: 30, lon: 31 }, { lat: 9, lon: 7 }, { lat: -26, lon: 28 }, { lat: -1, lon: 36 },
-  { lat: 33, lon: -7 }, { lat: 15, lon: 32 }, { lat: 6, lon: 3 }, { lat: -4, lon: 15 },
-  { lat: -18, lon: 31 }, { lat: 12, lon: 15 }, { lat: 25, lon: 17 }, { lat: -12, lon: 28 },
-  { lat: 0, lon: 25 }, { lat: 5, lon: 40 }, { lat: -33, lon: 18 },
-
-  // Asia
-  { lat: 35, lon: 139 }, { lat: 31, lon: 121 }, { lat: 39, lon: 116 }, { lat: 28, lon: 77 },
-  { lat: 19, lon: 72 }, { lat: 13, lon: 80 }, { lat: 1, lon: 103 }, { lat: 13, lon: 100 },
-  { lat: 37, lon: 127 }, { lat: 22, lon: 114 }, { lat: 25, lon: 121 }, { lat: 35, lon: 51 },
-  { lat: 24, lon: 54 }, { lat: 32, lon: 35 }, { lat: 60, lon: 100 }, { lat: 55, lon: 82 },
-  { lat: 43, lon: 76 }, { lat: 14, lon: 121 }, { lat: -6, lon: 106 }, { lat: 23, lon: 90 },
-
-  // Australia & Oceania
-  { lat: -33, lon: 151 }, { lat: -37, lon: 144 }, { lat: -27, lon: 153 }, { lat: -31, lon: 115 },
-  { lat: -23, lon: 133 }, { lat: -41, lon: 174 }, { lat: -36, lon: 174 }
+  [
+    { lat: 36, lon: -6 }, { lat: 37, lon: 10 }, { lat: 32, lon: 25 }, { lat: 31, lon: 32 },
+    { lat: 12, lon: 44 }, { lat: -12, lon: 40 }, { lat: -28, lon: 32 }, { lat: -34, lon: 20 },
+    { lat: -22, lon: 14 }, { lat: -5, lon: 12 }, { lat: 4, lon: 9 }, { lat: 5, lon: 0 },
+    { lat: 15, lon: -17 }, { lat: 28, lon: -13 }, { lat: 36, lon: -6 }
+  ],
+  // Madagascar
+  [
+    { lat: -12, lon: 49 }, { lat: -25, lon: 47 }, { lat: -25, lon: 44 }, { lat: -13, lon: 48 },
+    { lat: -12, lon: 49 }
+  ],
+  // Asia & Northern Eurasia
+  [
+    { lat: 70, lon: 40 }, { lat: 75, lon: 100 }, { lat: 72, lon: 140 }, { lat: 65, lon: 170 },
+    { lat: 60, lon: 162 }, { lat: 45, lon: 142 }, { lat: 38, lon: 128 }, { lat: 30, lon: 122 },
+    { lat: 22, lon: 114 }, { lat: 10, lon: 106 }, { lat: 1, lon: 104 }, { lat: 15, lon: 96 },
+    { lat: 22, lon: 70 }, { lat: 25, lon: 62 }, { lat: 15, lon: 53 }, { lat: 12, lon: 44 },
+    { lat: 30, lon: 35 }, { lat: 40, lon: 40 }, { lat: 45, lon: 50 }, { lat: 55, lon: 60 },
+    { lat: 65, lon: 60 }, { lat: 70, lon: 40 }
+  ],
+  // Indian Subcontinent
+  [
+    { lat: 25, lon: 68 }, { lat: 21, lon: 70 }, { lat: 15, lon: 74 }, { lat: 8, lon: 77 },
+    { lat: 13, lon: 80 }, { lat: 17, lon: 82 }, { lat: 22, lon: 89 }, { lat: 28, lon: 95 },
+    { lat: 34, lon: 76 }, { lat: 30, lon: 70 }, { lat: 25, lon: 68 }
+  ],
+  // Japan
+  [
+    { lat: 45, lon: 142 }, { lat: 40, lon: 141 }, { lat: 35, lon: 140 }, { lat: 32, lon: 130 },
+    { lat: 37, lon: 137 }, { lat: 45, lon: 142 }
+  ],
+  // Australia
+  [
+    { lat: -12, lon: 132 }, { lat: -12, lon: 142 }, { lat: -24, lon: 153 }, { lat: -38, lon: 147 },
+    { lat: -35, lon: 116 }, { lat: -22, lon: 114 }, { lat: -15, lon: 124 }, { lat: -12, lon: 132 }
+  ],
+  // New Zealand
+  [
+    { lat: -35, lon: 174 }, { lat: -46, lon: 168 }, { lat: -44, lon: 171 }, { lat: -35, lon: 174 }
+  ],
+  // Antarctica
+  [
+    { lat: -65, lon: -60 }, { lat: -70, lon: 0 }, { lat: -68, lon: 60 }, { lat: -65, lon: 120 },
+    { lat: -70, lon: 160 }, { lat: -75, lon: -150 }, { lat: -72, lon: -100 }, { lat: -65, lon: -60 }
+  ]
 ];
 
+// Ray-Casting algorithm to check point inside polygon
+function isPointInPolygon(lat, lon, poly) {
+  let inside = false;
+  for (let i = 0, j = poly.length - 1; i < poly.length; j = i++) {
+    const xi = poly[i].lon, yi = poly[i].lat;
+    const xj = poly[j].lon, yj = poly[j].lat;
+    const intersect = ((yi > lat) !== (yj > lat)) &&
+        (lon < (xj - xi) * (lat - yi) / (yj - yi) + xi);
+    if (intersect) inside = !inside;
+  }
+  return inside;
+}
+
+// Generate Dense Raster Scanline Matrix Dots
 function generateGlobeDots() {
   const dots = [];
-  CONTINENT_POINTS.forEach((pt) => {
-    dots.push({ lat: pt.lat, lon: pt.lon });
-    for (let i = 0; i < 9; i++) {
-      const dLat = (Math.random() - 0.5) * 8;
-      const dLon = (Math.random() - 0.5) * 10;
-      dots.push({
-        lat: Math.max(-80, Math.min(80, pt.lat + dLat)),
-        lon: (pt.lon + dLon + 180) % 360 - 180
-      });
-    }
-  });
+  const latStep = 2.4;
+  const lonStep = 2.4;
 
-  for (let i = 0; i < 160; i++) {
-    dots.push({
-      lat: (Math.random() - 0.5) * 150,
-      lon: (Math.random() - 0.5) * 360,
-      isOcean: true
-    });
+  for (let lat = -80; lat <= 80; lat += latStep) {
+    for (let lon = -180; lon < 180; lon += lonStep) {
+      let isLand = false;
+      for (let p = 0; p < CONTINENT_POLYGONS.length; p++) {
+        if (isPointInPolygon(lat, lon, CONTINENT_POLYGONS[p])) {
+          isLand = true;
+          break;
+        }
+      }
+      if (isLand) {
+        dots.push({ lat, lon });
+      }
+    }
   }
   return dots;
 }
@@ -100,33 +157,33 @@ const ZENITH_THREAT_STREAMS = [
   },
   {
     id: 'stream-3',
-    from: { lat: 14.59, lon: 120.98, name: 'Adversary Proxy Hive' },
+    from: { lat: 1.35, lon: 103.82, name: 'Lazarus Group Pivot' },
     targetAsset: {
-      name: 'AWS EKS Prod Cluster',
+      name: 'Treasury Settlement DB',
       city: 'Tokyo',
-      lat: 35.67,
-      lon: 139.65,
+      lat: 35.68,
+      lon: 139.76,
       valuation: '$18.0M',
-      baselineRisk: 78,
-      mitigatedRisk: 16,
-      control: 'Zero-Trust mTLS & EDR Hunting'
+      baselineRisk: 79,
+      mitigatedRisk: 21,
+      control: 'Zero-Trust Microsegmentation'
     },
-    threat: 'Admin Token Hijack & Lateral Probe',
-    cvss: 8.9,
-    lossAvoided: '$1,800,000'
+    threat: 'Supply Chain Kernel Backdoor',
+    cvss: 9.1,
+    lossAvoided: '$3,200,000'
   },
   {
     id: 'stream-4',
-    from: { lat: 52.52, lon: 13.4, name: 'Compromised CI/CD Pipeline' },
+    from: { lat: 52.52, lon: 13.4, name: 'LockBit 3.0 Affiliate' },
     targetAsset: {
-      name: 'Customer Identity DB',
+      name: 'Cardholder Data Env (CDE)',
       city: 'Frankfurt',
       lat: 50.11,
       lon: 8.68,
       valuation: '$8.2M',
       baselineRisk: 74,
-      mitigatedRisk: 21,
-      control: 'DB Query Proxy & Air-Gapped Snapshots'
+      mitigatedRisk: 16,
+      control: 'AES-256 Envelope Tokenization'
     },
     threat: 'SQLi Mass PII Exfiltration',
     cvss: 8.4,
@@ -158,6 +215,12 @@ export function CyberGlobe() {
   const [signalCount, setSignalCount] = useState(28470);
   const [totalLossSaved, setTotalLossSaved] = useState(10700000);
 
+  // Drag interaction state
+  const isDraggingRef = useRef(false);
+  const prevMousePosRef = useRef({ x: 0, y: 0 });
+  const rotYRef = useRef(-1.2); // Start showing America/Atlantic matching reference
+  const tiltXRef = useRef(0.22); // Natural axial tilt
+
   useEffect(() => {
     const canvas = canvasRef.current;
     if (!canvas) return;
@@ -165,13 +228,13 @@ export function CyberGlobe() {
     let animationFrameId;
 
     const dots = generateGlobeDots();
-    let rotation = 0;
     const radius = 170; // Globe sphere radius
+    const focalLength = 480; // Perspective camera focal length
 
     const arcs = ZENITH_THREAT_STREAMS.map((s, i) => ({
       ...s,
-      progress: (i * 0.2) % 1,
-      speed: 0.006 + Math.random() * 0.004,
+      progress: (i * 0.22) % 1,
+      speed: 0.0055 + Math.random() * 0.0035,
       shieldRipples: []
     }));
 
@@ -182,181 +245,284 @@ export function CyberGlobe() {
       setActiveStream(ZENITH_THREAT_STREAMS[Math.floor(Math.random() * ZENITH_THREAT_STREAMS.length)]);
     }, 2800);
 
-    const render = () => {
-      ctx.clearRect(0, 0, canvas.width, canvas.height);
+    // 3D Euler Rotation & Perspective Projection Engine
+    const project3D = (lat, lon, altitude = 0) => {
+      const radLat = (lat * Math.PI) / 180;
+      const radLon = (lon * Math.PI) / 180 + rotYRef.current;
+      const r = radius + altitude;
+
+      // Base spherical coordinates
+      const x0 = r * Math.cos(radLat) * Math.sin(radLon);
+      const y0 = -r * Math.sin(radLat);
+      const z0 = r * Math.cos(radLat) * Math.cos(radLon);
+
+      // Pitch / Axial tilt around X-axis
+      const tilt = tiltXRef.current;
+      const x = x0;
+      const y = y0 * Math.cos(tilt) - z0 * Math.sin(tilt);
+      const z = y0 * Math.sin(tilt) + z0 * Math.cos(tilt);
+
+      // Perspective scale factor
+      const scale = focalLength / (focalLength + z);
       const cx = canvas.width / 2;
       const cy = canvas.height / 2;
 
-      rotation += 0.0042; // Constant smooth 3D globe rotation
+      return {
+        x: cx + x * scale,
+        y: cy + y * scale,
+        z,
+        scale,
+        visible: z > -radius * 0.2, // Depth clipping
+        isFront: z > 0,
+        nx: x / r,
+        ny: y / r,
+        nz: z / r
+      };
+    };
 
-      // 1. Globe Ambient Red Radial Glow
-      const glowGrad = ctx.createRadialGradient(cx, cy, radius * 0.6, cx, cy, radius * 1.18);
-      glowGrad.addColorStop(0, 'rgba(225, 29, 63, 0.04)');
-      glowGrad.addColorStop(0.7, 'rgba(225, 29, 63, 0.14)');
-      glowGrad.addColorStop(1, 'rgba(13, 6, 10, 0)');
-      ctx.fillStyle = glowGrad;
-      ctx.beginPath();
-      ctx.arc(cx, cy, radius * 1.25, 0, Math.PI * 2);
-      ctx.fill();
+    const render = () => {
+      // 1. Deep Black Canvas Background
+      ctx.fillStyle = '#000000';
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-      // 2. Outer Wireframe Globe Rim
-      ctx.strokeStyle = 'rgba(225, 29, 63, 0.35)';
+      const cx = canvas.width / 2;
+      const cy = canvas.height / 2;
+
+      // Auto-rotation when not dragging
+      if (!isDraggingRef.current) {
+        rotYRef.current += 0.0038;
+      }
+
+      // 2. Dark Grey Latitude & Longitude Wireframe Grid Circles
+      [-60, -45, -30, -15, 0, 15, 30, 45, 60].forEach((lat) => {
+        ctx.beginPath();
+        let started = false;
+        for (let lon = -180; lon <= 180; lon += 5) {
+          const p = project3D(lat, lon);
+          if (p.isFront) {
+            if (!started) {
+              ctx.moveTo(p.x, p.y);
+              started = true;
+            } else {
+              ctx.lineTo(p.x, p.y);
+            }
+          } else {
+            started = false;
+          }
+        }
+        ctx.strokeStyle = lat === 0 ? 'rgba(90, 90, 90, 0.45)' : 'rgba(50, 50, 50, 0.35)';
+        ctx.lineWidth = 0.8;
+        ctx.stroke();
+      });
+
+      // Longitude Meridians in 3D
+      [-150, -120, -90, -60, -30, 0, 30, 60, 90, 120, 150, 180].forEach((lon) => {
+        ctx.beginPath();
+        let started = false;
+        for (let lat = -80; lat <= 80; lat += 4) {
+          const p = project3D(lat, lon);
+          if (p.isFront) {
+            if (!started) {
+              ctx.moveTo(p.x, p.y);
+              started = true;
+            } else {
+              ctx.lineTo(p.x, p.y);
+            }
+          } else {
+            started = false;
+          }
+        }
+        ctx.strokeStyle = 'rgba(50, 50, 50, 0.3)';
+        ctx.lineWidth = 0.7;
+        ctx.stroke();
+      });
+
+      // 3. Outer Sphere Dark Grey Rim Enclosing Globe
+      ctx.strokeStyle = 'rgba(140, 140, 140, 0.5)';
       ctx.lineWidth = 1.4;
       ctx.beginPath();
       ctx.arc(cx, cy, radius, 0, Math.PI * 2);
       ctx.stroke();
 
-      // 3. Latitude Grid Circles
-      ctx.strokeStyle = 'rgba(225, 29, 63, 0.09)';
-      ctx.lineWidth = 0.8;
-      [-45, -20, 0, 20, 45].forEach((lat) => {
-        const phi = (lat * Math.PI) / 180;
-        const rLat = radius * Math.cos(phi);
-        const yLat = cy - radius * Math.sin(phi);
+      // 4. Render Glowing Red Continental Coastline Contour Lines
+      CONTINENT_POLYGONS.forEach((polygon) => {
+        const interpPoints = [];
+        for (let i = 0; i < polygon.length - 1; i++) {
+          const ptA = polygon[i];
+          const ptB = polygon[i + 1];
+          const subSteps = 6;
+          for (let s = 0; s < subSteps; s++) {
+            const t = s / subSteps;
+            const lat = ptA.lat + (ptB.lat - ptA.lat) * t;
+            const lon = ptA.lon + (ptB.lon - ptA.lon) * t;
+            interpPoints.push(project3D(lat, lon));
+          }
+        }
+        interpPoints.push(project3D(polygon[polygon.length - 1].lat, polygon[polygon.length - 1].lon));
+
         ctx.beginPath();
-        ctx.ellipse(cx, yLat, rLat, rLat * 0.24, 0, 0, Math.PI * 2);
+        let frontStarted = false;
+        interpPoints.forEach((p) => {
+          if (p.isFront) {
+            if (!frontStarted) {
+              ctx.moveTo(p.x, p.y);
+              frontStarted = true;
+            } else {
+              ctx.lineTo(p.x, p.y);
+            }
+          } else {
+            frontStarted = false;
+          }
+        });
+        ctx.strokeStyle = '#ff0033';
+        ctx.lineWidth = 1.3;
         ctx.stroke();
       });
 
-      // 3D Perspective Projection formula
-      const project = (lat, lon) => {
-        const radLat = (lat * Math.PI) / 180;
-        const radLon = (lon * Math.PI) / 180 + rotation;
-
-        const x = radius * Math.cos(radLat) * Math.sin(radLon);
-        const y = -radius * Math.sin(radLat);
-        const z = radius * Math.cos(radLat) * Math.cos(radLon);
-
-        return {
-          x: cx + x,
-          y: cy + y,
-          z,
-          visible: z > 0
-        };
-      };
-
-      // 4. Render rotating 3D world landmass dots
+      // 5. Render Dense Scanline Red Matrix Dots (Exact Visual Match to Reference)
       dots.forEach((dot) => {
-        const p = project(dot.lat, dot.lon);
-        if (p.visible) {
-          const depthAlpha = Math.max(0.12, p.z / radius);
+        const p = project3D(dot.lat, dot.lon);
+        if (p.isFront) {
+          const dotSize = Math.max(1.1, 1.65 * p.scale);
+
           ctx.beginPath();
-          ctx.arc(p.x, p.y, dot.isOcean ? 1.0 : 1.75, 0, Math.PI * 2);
-          if (dot.isOcean) {
-            ctx.fillStyle = `rgba(225, 29, 63, ${depthAlpha * 0.22})`;
-          } else {
-            ctx.fillStyle = `rgba(244, 63, 94, ${depthAlpha * 0.95})`;
-            if (p.z > radius * 0.5) {
-              ctx.shadowColor = '#e11d3f';
-              ctx.shadowBlur = 3;
-            } else {
-              ctx.shadowBlur = 0;
-            }
-          }
+          ctx.arc(p.x, p.y, dotSize, 0, Math.PI * 2);
+          ctx.fillStyle = '#ff0028';
           ctx.fill();
         }
       });
-      ctx.shadowBlur = 0;
 
-      // 5. Render Zenith Digital Asset Hubs & Knapsack Shields
+      // 6. Render Zenith Digital Asset Hubs in 3D Space
       ZENITH_THREAT_STREAMS.forEach((item) => {
-        const p = project(item.targetAsset.lat, item.targetAsset.lon);
-        if (p.visible) {
+        const p = project3D(item.targetAsset.lat, item.targetAsset.lon);
+        if (p.isFront) {
           const isShielded = knapsackShieldActive;
 
-          // Outer Shield Ring
+          // Outer 3D Shield Ring
           ctx.beginPath();
-          ctx.arc(p.x, p.y, isShielded ? 8.5 : 6, 0, Math.PI * 2);
-          ctx.strokeStyle = isShielded ? 'rgba(34, 197, 94, 0.8)' : 'rgba(239, 68, 68, 0.8)';
-          ctx.lineWidth = 1.5;
+          ctx.arc(p.x, p.y, (isShielded ? 9 : 7) * p.scale, 0, Math.PI * 2);
+          ctx.strokeStyle = isShielded ? '#22c55e' : '#ff0033';
+          ctx.lineWidth = 1.8 * p.scale;
           ctx.stroke();
 
           // Center Asset Node
           ctx.beginPath();
-          ctx.arc(p.x, p.y, 3.5, 0, Math.PI * 2);
-          ctx.fillStyle = isShielded ? '#22c55e' : '#ef4444';
-          ctx.shadowColor = isShielded ? '#22c55e' : '#ef4444';
+          ctx.arc(p.x, p.y, 3.8 * p.scale, 0, Math.PI * 2);
+          ctx.fillStyle = isShielded ? '#22c55e' : '#ff0033';
+          ctx.shadowColor = isShielded ? '#22c55e' : '#ff0033';
           ctx.shadowBlur = 8;
           ctx.fill();
           ctx.shadowBlur = 0;
 
           // Asset HUD Label
-          ctx.font = '9px "JetBrains Mono", monospace';
-          ctx.fillStyle = isShielded ? '#86efac' : '#fca5a5';
-          ctx.fillText(item.targetAsset.city, p.x + 8, p.y - 2);
+          ctx.font = `bold ${Math.round(9 * p.scale)}px "JetBrains Mono", monospace`;
+          ctx.fillStyle = isShielded ? '#4ade80' : '#ff6b81';
+          ctx.fillText(item.targetAsset.city, p.x + 9 * p.scale, p.y - 2);
 
           // Valuation & Risk Badge
-          ctx.font = '8px "Poppins", sans-serif';
-          ctx.fillStyle = '#cbd5e1';
+          ctx.font = `700 ${Math.round(8 * p.scale)}px "Poppins", sans-serif`;
+          ctx.fillStyle = '#e2e8f0';
           const currentScore = isShielded ? item.targetAsset.mitigatedRisk : item.targetAsset.baselineRisk;
-          ctx.fillText(`${item.targetAsset.valuation} (Risk ${currentScore})`, p.x + 8, p.y + 8);
+          ctx.fillText(`${item.targetAsset.valuation} (Risk ${currentScore})`, p.x + 9 * p.scale, p.y + 8 * p.scale);
         }
       });
 
-      // 6. Render Parabolic Threat Ingress Arcs & Shield Neutralizations
+      // 7. Render 3D Elevated Attack Arcs & Projectile Lasers
       arcs.forEach((arc) => {
-        const fromP = project(arc.from.lat, arc.from.lon);
-        const toP = project(arc.targetAsset.lat, arc.targetAsset.lon);
+        const fromP = project3D(arc.from.lat, arc.from.lon);
+        const toP = project3D(arc.targetAsset.lat, arc.targetAsset.lon);
 
         arc.progress += arc.speed;
         if (arc.progress >= 1) {
           arc.progress = 0;
-          if (toP.visible) {
-            arc.shieldRipples.push({ radius: 4, alpha: 1.0, success: knapsackShieldActive });
+          if (toP.isFront) {
+            arc.shieldRipples.push({ radius: 5, alpha: 1.0, success: knapsackShieldActive });
           }
         }
 
-        // Adversary attacker origin point
-        if (fromP.visible) {
+        // Attacker origin beacon
+        if (fromP.isFront) {
           ctx.beginPath();
-          ctx.arc(fromP.x, fromP.y, 3, 0, Math.PI * 2);
-          ctx.fillStyle = '#ef4444';
-          ctx.shadowColor = '#ef4444';
-          ctx.shadowBlur = 6;
+          ctx.arc(fromP.x, fromP.y, 6 * fromP.scale, 0, Math.PI * 2);
+          ctx.strokeStyle = 'rgba(255, 0, 50, 0.7)';
+          ctx.lineWidth = 1.4;
+          ctx.stroke();
+
+          ctx.beginPath();
+          ctx.arc(fromP.x, fromP.y, 3.2 * fromP.scale, 0, Math.PI * 2);
+          ctx.fillStyle = '#ff0033';
+          ctx.shadowColor = '#ff0033';
+          ctx.shadowBlur = 8;
           ctx.fill();
           ctx.shadowBlur = 0;
         }
 
-        // Draw Parabolic Attack Trajectory
-        if (fromP.visible || toP.visible) {
-          const midX = (fromP.x + toP.x) / 2;
-          const midY = (fromP.y + toP.y) / 2 - 42;
+        // Parabolic 3D Attack Trajectory
+        const steps = 24;
+        let arcPoints = [];
+        let anyVisible = false;
 
+        for (let s = 0; s <= steps; s++) {
+          const t = s / steps;
+          const lat = arc.from.lat + (arc.targetAsset.lat - arc.from.lat) * t;
+          const lon = arc.from.lon + (arc.targetAsset.lon - arc.from.lon) * t;
+          const altitude = Math.sin(t * Math.PI) * 45;
+          const p = project3D(lat, lon, altitude);
+          arcPoints.push(p);
+          if (p.isFront) anyVisible = true;
+        }
+
+        if (anyVisible) {
           ctx.beginPath();
-          ctx.moveTo(fromP.x, fromP.y);
-          ctx.quadraticCurveTo(midX, midY, toP.x, toP.y);
-          ctx.strokeStyle = 'rgba(244, 63, 94, 0.35)';
-          ctx.setLineDash([3, 4]);
-          ctx.lineWidth = 1.2;
+          let lineStarted = false;
+          arcPoints.forEach((pt) => {
+            if (pt.isFront) {
+              if (!lineStarted) {
+                ctx.moveTo(pt.x, pt.y);
+                lineStarted = true;
+              } else {
+                ctx.lineTo(pt.x, pt.y);
+              }
+            } else {
+              lineStarted = false;
+            }
+          });
+          ctx.strokeStyle = '#ff0033';
+          ctx.setLineDash([4, 4]);
+          ctx.lineWidth = 1.8;
           ctx.stroke();
           ctx.setLineDash([]);
 
-          // Leading Projectile Head
-          const t = arc.progress;
-          const headX = (1 - t) * (1 - t) * fromP.x + 2 * (1 - t) * t * midX + t * t * toP.x;
-          const headY = (1 - t) * (1 - t) * fromP.y + 2 * (1 - t) * t * midY + t * t * toP.y;
+          // 3D Laser Projectile
+          const projT = arc.progress;
+          const projLat = arc.from.lat + (arc.targetAsset.lat - arc.from.lat) * projT;
+          const projLon = arc.from.lon + (arc.targetAsset.lon - arc.from.lon) * projT;
+          const projAlt = Math.sin(projT * Math.PI) * 45;
+          const headP = project3D(projLat, projLon, projAlt);
 
-          ctx.beginPath();
-          ctx.arc(headX, headY, 3.2, 0, Math.PI * 2);
-          ctx.fillStyle = '#ffffff';
-          ctx.shadowColor = '#ff2c55';
-          ctx.shadowBlur = 10;
-          ctx.fill();
-          ctx.shadowBlur = 0;
+          if (headP.isFront) {
+            ctx.beginPath();
+            ctx.arc(headP.x, headP.y, 4.2 * headP.scale, 0, Math.PI * 2);
+            ctx.fillStyle = '#ffffff';
+            ctx.shadowColor = '#ff0033';
+            ctx.shadowBlur = 10 * headP.scale;
+            ctx.fill();
+            ctx.shadowBlur = 0;
+          }
         }
 
-        // Animate Shield Deflection Ripples
-        if (toP.visible) {
+        // Shield Deflection Ripples
+        if (toP.isFront) {
           arc.shieldRipples.forEach((ripple) => {
-            ripple.radius += 0.9;
-            ripple.alpha -= 0.038;
+            ripple.radius += 1.1 * toP.scale;
+            ripple.alpha -= 0.035;
             if (ripple.alpha > 0) {
               ctx.beginPath();
               ctx.arc(toP.x, toP.y, ripple.radius, 0, Math.PI * 2);
               ctx.strokeStyle = ripple.success
                 ? `rgba(34, 197, 94, ${ripple.alpha})`
-                : `rgba(239, 68, 68, ${ripple.alpha})`;
-              ctx.lineWidth = 1.8;
+                : `rgba(255, 0, 50, ${ripple.alpha})`;
+              ctx.lineWidth = 2.0 * toP.scale;
               ctx.stroke();
             }
           });
@@ -375,6 +541,26 @@ export function CyberGlobe() {
     };
   }, [knapsackShieldActive]);
 
+  // Mouse & Touch Drag Handlers for 3D Interactive Rotation
+  const handleMouseDown = (e) => {
+    isDraggingRef.current = true;
+    prevMousePosRef.current = { x: e.clientX, y: e.clientY };
+  };
+
+  const handleMouseMove = (e) => {
+    if (!isDraggingRef.current) return;
+    const dx = e.clientX - prevMousePosRef.current.x;
+    const dy = e.clientY - prevMousePosRef.current.y;
+    prevMousePosRef.current = { x: e.clientX, y: e.clientY };
+
+    rotYRef.current += dx * 0.008;
+    tiltXRef.current = Math.max(-0.6, Math.min(0.6, tiltXRef.current + dy * 0.008));
+  };
+
+  const handleMouseUp = () => {
+    isDraggingRef.current = false;
+  };
+
   return (
     <div className="cyber-globe-wrapper">
       <div className="globe-canvas-card">
@@ -387,16 +573,39 @@ export function CyberGlobe() {
           </div>
           <div className="hud-metric">
             <span className="hud-label">ESTIMATED LOSS AVOIDED</span>
-            <span className="hud-val text-success">${(totalLossSaved / 1000000).toFixed(2)}M USD</span>
+            <span className="hud-val">${(totalLossSaved / 1000000).toFixed(2)}M USD</span>
           </div>
         </div>
 
-        {/* 3D Rotating Canvas */}
+        {/* 3D Interactive Rotating Canvas */}
         <canvas
           ref={canvasRef}
           width={450}
           height={400}
           className="cyber-globe-canvas"
+          onMouseDown={handleMouseDown}
+          onMouseMove={handleMouseMove}
+          onMouseUp={handleMouseUp}
+          onMouseLeave={handleMouseUp}
+          onTouchStart={(e) => {
+            if (e.touches.length === 1) {
+              isDraggingRef.current = true;
+              prevMousePosRef.current = { x: e.touches[0].clientX, y: e.touches[0].clientY };
+            }
+          }}
+          onTouchMove={(e) => {
+            if (isDraggingRef.current && e.touches.length === 1) {
+              const dx = e.touches[0].clientX - prevMousePosRef.current.x;
+              const dy = e.touches[0].clientY - prevMousePosRef.current.y;
+              prevMousePosRef.current = { x: e.touches[0].clientX, y: e.touches[0].clientY };
+              rotYRef.current += dx * 0.008;
+              tiltXRef.current = Math.max(-0.6, Math.min(0.6, tiltXRef.current + dy * 0.008));
+            }
+          }}
+          onTouchEnd={() => {
+            isDraggingRef.current = false;
+          }}
+          title="Click and drag to rotate the 3D Cyber Globe"
         />
 
         {/* Dynamic Concept HUD & Interactive Shield Controls */}

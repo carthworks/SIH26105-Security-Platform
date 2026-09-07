@@ -13,34 +13,39 @@ export default function HowItWorksPage({ onNavigate }) {
   const steps = [
     {
       num: 1,
-      title: 'Enterprise Asset Ingestion & Valuation',
-      desc: 'Zenith maps digital infrastructure (APIs, databases, payment brokers, web portals), assigning criticality tiers (Critical, High, Medium, Low) and financial business value estimates.'
+      title: 'Enterprise Asset Ingestion & Lifecycle CRUD',
+      desc: 'Zenith maps digital infrastructure across hybrid environments, tracking valuation, assigned SecOps business process ownership, and criticality tiers (Critical, High, Medium, Low) with real-time API sync.'
     },
     {
       num: 2,
-      title: 'Threat Matrix & CVE Correlation',
-      desc: 'Discovered vulnerabilities (CVSS 3.1) are correlated with adversary threat profiles (likelihood, attack surfaces, and historical breach data) to quantify real-world exploitability.'
+      title: 'Threat Matrix & Multi-Source CVE Correlation',
+      desc: 'Active CVE vulnerabilities with CVSS v3.1 base ratings are correlated with adversary threat campaign profiles (likelihood, attack surfaces, MITRE ATT&CK tactics) to quantify real-world exploitability.'
     },
     {
       num: 3,
-      title: 'FAIR-Inspired Risk Quantification Engine',
-      desc: 'Calculates a normalized 0-100 risk score per asset by multiplying vulnerability severity, threat likelihood, and asset criticality, attenuated by active defensive controls.'
+      title: 'Continuous FAIR-Inspired Risk Engine & 5x5 Heatmap',
+      desc: 'Calculates continuous 0-100 risk scores per asset by multiplying severity, threat likelihood, and asset criticality, attenuated by active defensive controls and placed on an interactive 5x5 Matrix.'
     },
     {
       num: 4,
-      title: 'Knapsack Portfolio Investment Optimization',
-      desc: 'Utilizes a dynamic programming 0/1 Knapsack algorithm to determine the mathematically optimal combination of security safeguards that yields maximum risk reduction for a given budget.'
+      title: '0/1 Knapsack Portfolio Investment Optimization',
+      desc: 'Utilizes a dynamic programming Knapsack algorithm to determine the mathematically optimal combination of security safeguards that maximizes risk reduction ROI within strict budget constraints.'
     },
     {
       num: 5,
-      title: 'Monte Carlo Stress-Testing & Directives',
-      desc: 'Simulates cyber attack scenarios (Ransomware, DDoS, Insider exfiltration) against pre- and post-control states, generating prioritized mitigation playbooks for engineering teams.'
+      title: 'Live Zero-Day Incident Simulation & 3D Telemetry',
+      desc: 'Injects live attack scenarios (Log4Shell, FIN7 Ransomware, Layer-7 DDoS, Insider Exfiltration) streaming real-time telemetry spikes and rendering 3D parabolic laser trajectories with auto-mitigation.'
+    },
+    {
+      num: 6,
+      title: 'One-Click Executive PDF & GRC Compliance Export',
+      desc: 'Generates board-ready audit briefings (PDF / JSON / CSV) with regulatory standard mappings (NIST CSF 2.0, ISO 27001, SOC 2 Type II, CIS Controls) and formal multi-stakeholder CISO sign-off blocks.'
     }
   ];
 
   const faqs = [
     {
-      q: 'How does Zenith quantify cyber risk into a 0-100 score?',
+      q: 'How does Zenith quantify cyber risk into a defensible 0-100 score?',
       a: 'Zenith uses a multi-factor formula inspired by the FAIR (Factor Analysis of Information Risk) framework. It combines Asset Criticality (weight), Vulnerability Severity (CVSS v3.1), and Threat Likelihood (1-5 scale), discounted by existing defensive Control Effectiveness.'
     },
     {
@@ -48,8 +53,12 @@ export default function HowItWorksPage({ onNavigate }) {
       a: 'Security budgets are finite. Rather than randomly purchasing tools, the 0/1 Knapsack optimizer calculates the exact combination of security controls (WAF, Zero-Trust, EDR, IAM) that delivers the maximum total risk reduction percentage without exceeding your specified budget cap.'
     },
     {
-      q: 'How do Scenario Simulations work?',
-      a: 'The scenario engine evaluates specific threat campaign models (e.g., FIN7 Ransomware). It compares the asset risk posture before security investment vs. after applying targeted controls to quantify expected loss avoided.'
+      q: 'How does the Executive Audit PDF and GRC Export work?',
+      a: 'Clicking "Executive Audit PDF" generates an A4 boardroom-ready briefing including KPI scorecards, risk matrices, budget ROI, NIST CSF 2.0/ISO 27001 compliance mappings, and CISO attestation signatures. You can Print/Save as PDF, download raw JSON compliance evidence, or export CSV spreadsheets.'
+    },
+    {
+      q: 'How does the Live Zero-Day Incident Simulation Sandbox operate?',
+      a: 'The simulation sandbox streams simulated adversary telemetry signals, surging asset risk scores in real-time, shifting quadrant coordinates on the 5x5 Risk Heatmap, and computing instantaneous Knapsack auto-containment strategies with one-click countermeasure deployment.'
     },
     {
       q: 'How do I resolve backend port conflicts (Port 8000 vs 8001)?',
@@ -57,7 +66,7 @@ export default function HowItWorksPage({ onNavigate }) {
     },
     {
       q: 'How can I integrate Zenith with our existing SIEM or vulnerability scanners?',
-      a: 'Zenith provides standard RESTful endpoints under /api/v1/ (Assets, Vulnerabilities, Threats, Controls). You can push findings from scanners like Nessus, Qualys, or Snyk directly via POST requests.'
+      a: 'Zenith provides standard RESTful endpoints under /api/v1/ (Assets, Vulnerabilities, Threats, Controls). You can push findings from scanners like Nessus, Qualys, or Snyk directly via POST/PUT requests.'
     }
   ];
 

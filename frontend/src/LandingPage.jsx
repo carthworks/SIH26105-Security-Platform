@@ -165,46 +165,81 @@ export default function LandingPage({ onNavigate }) {
       }}>
         <div style={{ maxWidth: '1280px', margin: '0 auto' }}>
           <div style={{ textAlign: 'center', marginBottom: '56px' }}>
-            <h2 style={{ fontSize: '2rem', fontWeight: 700 }}>Built for Quantitative Cyber Defense</h2>
-            <p style={{ color: 'var(--stone-700)', maxWidth: '640px', margin: '8px auto 0' }}>
-              Four integrated engines that bridge technical vulnerability telemetry and executive security investment decisions.
+            <div style={{
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: '8px',
+              padding: '4px 14px',
+              borderRadius: 'var(--radius-full)',
+              background: 'var(--stone-50)',
+              border: '1px solid var(--stone-100)',
+              fontSize: '0.8125rem',
+              fontWeight: 600,
+              color: 'var(--rose-700)',
+              marginBottom: '16px'
+            }}>
+              Core Platform Capabilities & Modules
+            </div>
+            <h2 style={{ fontSize: '2.25rem', fontWeight: 700, color: 'var(--neutral-950)' }}>
+              Built for <span className="text-gradient">Quantitative Cyber Defense & Executive Assurance</span>
+            </h2>
+            <p style={{ color: 'var(--stone-700)', maxWidth: '720px', margin: '10px auto 0', fontSize: '1rem', lineHeight: 1.6 }}>
+              Six integrated engines that bridge technical vulnerability telemetry, adversary intelligence, incident simulation, and executive boardroom capital allocation.
             </p>
           </div>
 
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '24px' }}>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))', gap: '24px' }}>
             {/* Feature 1 */}
             <div className="card-glass" style={{ padding: '32px' }}>
-              <div className="feature-icon-box">📊</div>
-              <h3 style={{ fontSize: '1.25rem', marginBottom: '10px' }}>Continuous Risk Scoring</h3>
+              <div className="feature-icon-box">📄</div>
+              <h3 style={{ fontSize: '1.2rem', marginBottom: '10px' }}>One-Click Executive PDF & Audit Package</h3>
               <p style={{ fontSize: '0.875rem', color: 'var(--stone-700)', lineHeight: 1.6 }}>
-                Dynamic scoring engine combining CVSS vulnerability scores, real-time threat likelihoods, and asset criticality valuations.
+                Generate boardroom-ready multi-page executive audit reports (PDF / JSON / CSV) with regulatory standard mappings (NIST CSF 2.0, ISO 27001, SOC 2, CIS Controls) and formal CISO sign-off attestation blocks.
               </p>
             </div>
 
             {/* Feature 2 */}
             <div className="card-glass" style={{ padding: '32px' }}>
-              <div className="feature-icon-box">💰</div>
-              <h3 style={{ fontSize: '1.25rem', marginBottom: '10px' }}>Knapsack Budget Optimizer</h3>
+              <div className="feature-icon-box">⚡</div>
+              <h3 style={{ fontSize: '1.2rem', marginBottom: '10px' }}>Live Zero-Day Incident Simulation</h3>
               <p style={{ fontSize: '0.875rem', color: 'var(--stone-700)', lineHeight: 1.6 }}>
-                0/1 Knapsack optimization algorithm that mathematically selects defensive controls to maximize overall risk reduction ROI within budget limits.
+                Real-time adversary attack injection (Log4Shell RCE, FIN7 Ransomware, Layer-7 DDoS, Insider Exfiltration) streaming live telemetry signals with instant risk surging and Knapsack auto-containment.
               </p>
             </div>
 
             {/* Feature 3 */}
             <div className="card-glass" style={{ padding: '32px' }}>
-              <div className="feature-icon-box">🎲</div>
-              <h3 style={{ fontSize: '1.25rem', marginBottom: '10px' }}>Monte Carlo Stress Testing</h3>
+              <div className="feature-icon-box">🌐</div>
+              <h3 style={{ fontSize: '1.2rem', marginBottom: '10px' }}>3D Cyber Attack Globe Telemetry</h3>
               <p style={{ fontSize: '0.875rem', color: 'var(--stone-700)', lineHeight: 1.6 }}>
-                Simulate targeted ransomware, DDoS, and insider breach scenarios to predict post-control efficacy and financial resilience.
+                Interactive 3D raster matrix globe with Euler perspective rotation, real-world continental dot grids, parabolic threat arcs, and live Knapsack defense shield deflection ripples.
               </p>
             </div>
 
             {/* Feature 4 */}
             <div className="card-glass" style={{ padding: '32px' }}>
-              <div className="feature-icon-box">🎯</div>
-              <h3 style={{ fontSize: '1.25rem', marginBottom: '10px' }}>Prioritized Directives</h3>
+              <div className="feature-icon-box">📝</div>
+              <h3 style={{ fontSize: '1.2rem', marginBottom: '10px' }}>Interactive Inventory & Threat CRUD</h3>
               <p style={{ fontSize: '0.875rem', color: 'var(--stone-700)', lineHeight: 1.6 }}>
-                Auto-generated mitigation playbooks rank ordered by urgency, reducing time-to-remediation for critical enterprise infrastructure.
+                Full lifecycle management for ingesting enterprise digital assets, logging CVE flaws with CVSS base scores, mapping MITRE ATT&CK threat campaigns, and deploying defensive safeguards.
+              </p>
+            </div>
+
+            {/* Feature 5 */}
+            <div className="card-glass" style={{ padding: '32px' }}>
+              <div className="feature-icon-box">💰</div>
+              <h3 style={{ fontSize: '1.2rem', marginBottom: '10px' }}>0/1 Knapsack Budget Optimizer</h3>
+              <p style={{ fontSize: '0.875rem', color: 'var(--stone-700)', lineHeight: 1.6 }}>
+                Dynamic programming Knapsack optimization algorithm that mathematically selects the optimal safeguard portfolio to maximize risk reduction ROI under strict budget limits.
+              </p>
+            </div>
+
+            {/* Feature 6 */}
+            <div className="card-glass" style={{ padding: '32px' }}>
+              <div className="feature-icon-box">🎯</div>
+              <h3 style={{ fontSize: '1.2rem', marginBottom: '10px' }}>Prioritized Action Directives</h3>
+              <p style={{ fontSize: '0.875rem', color: 'var(--stone-700)', lineHeight: 1.6 }}>
+                Actionable remediation directives rank-ordered by urgency and dollar-mitigation impact, slashing mean-time-to-remediation (MTTR) across multi-tier hybrid infrastructure.
               </p>
             </div>
           </div>
