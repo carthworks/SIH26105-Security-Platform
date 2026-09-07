@@ -10,6 +10,8 @@
 
 ## 🌟 Key Features
 
+- **Interactive Inventory & Threat CRUD**: Register new enterprise digital assets, log CVE vulnerabilities with CVSS scores, map MITRE ATT&CK threat vectors, and deploy defensive controls via modal dialogs and live backend API sync.
+- **Live Zero-Day Incident Simulation Sandbox**: Real-time adversary attack injection (Log4Shell RCE, FIN7 Ransomware, Layer-7 DDoS, Insider Exfiltration) streaming live telemetry signals, dynamically spiking risk scores and 5x5 heatmap quadrants, and computing instant Knapsack containment mitigations with one-click neutralization.
 - **Continuous Risk Assessment**: Quantifies asset-level risk scores dynamically based on vulnerability severity (CVSS), threat likelihood, and business impact.
 - **Enterprise Asset Inventory**: Centralized asset management tracking criticality tiers, valuation, and assigned SecOps ownership.
 - **Threat Matrix & Vulnerability Intelligence**: Active tracking of CVE vulnerabilities, adversary vectors, and attack likelihood.
@@ -50,6 +52,8 @@ zenith/
 ├── frontend/
 │   ├── src/
 │   │   ├── main.jsx                   # Root application & dashboard view
+│   │   ├── CrudModals.jsx             # Asset, CVE, Threat & Control CRUD modals
+│   │   ├── IncidentSimulator.jsx      # Live Zero-Day attack simulation sandbox
 │   │   ├── LandingPage.jsx            # Platform landing showcase page
 │   │   ├── HowItWorksPage.jsx         # Architecture guide & documentation
 │   │   ├── RiskHeatmap.jsx            # Interactive 5x5 Cyber Risk Matrix

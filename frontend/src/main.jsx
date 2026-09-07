@@ -6,6 +6,9 @@ import HowItWorksPage from './HowItWorksPage';
 import RiskHeatmap from './RiskHeatmap';
 import VisualAnalytics from './VisualAnalytics';
 import { NotFound404, ServerError500, ErrorBoundary } from './ErrorPages';
+import { AssetModal, VulnerabilityModal, ThreatModal, ControlModal } from './CrudModals';
+import { IncidentSimulator } from './IncidentSimulator';
+import { api } from './api';
 
 // High-fidelity fallback dataset for cyber risk quantification
 const FALLBACK_DATA = {
@@ -84,6 +87,7 @@ function parseHash(hash) {
   if (clean === 'assets' || clean === 'asset') return { page: 'dashboard', tab: 'assets' };
   if (clean === 'threat' || clean === 'threats') return { page: 'dashboard', tab: 'threats' };
   if (clean === 'ctrl' || clean === 'controls') return { page: 'dashboard', tab: 'controls' };
+  if (clean === 'simulator' || clean === 'sandbox' || clean === 'incident') return { page: 'dashboard', tab: 'simulator' };
   if (clean === 'invest' || clean === 'optimizer') return { page: 'dashboard', tab: 'invest' };
   if (clean === 'scenario' || clean === 'scenarios') return { page: 'dashboard', tab: 'scenarios' };
   if (clean === 'rec' || clean === 'recommendations') return { page: 'dashboard', tab: 'recommendations' };
@@ -100,6 +104,21 @@ function App() {
   const [budget, setBudget] = useState(50000);
   const [selectedInvestments, setSelectedInvestments] = useState({ 1: true, 2: true, 4: true });
   const [backendOnline, setBackendOnline] = useState(false);
+  const [activeModal, setActiveModal] = useState(null); // 'asset' | 'vuln' | 'threat' | 'control' | null
+  const [toast, setToast] = useState(null);
+  const [simState, setSimState] = useState({
+    active: false,
+    scenario: null,
+    targetAssetName: null,
+    riskScoreDelta: 0,
+    mitigated: false,
+    residualRiskReduction: 0
+  });
+
+  const showToast = (message, type = 'success') => {
+    setToast({ message, type });
+    setTimeout(() => setToast(null), 3500);
+  };
 
   // Sync hash changes
   useEffect(() => {
@@ -127,12 +146,9 @@ function App() {
         const isLocalhost = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
 
         if (!isLocalhost) {
-          // In production (Vercel), use relative path
           try {
             const prodRes = await fetch('/api/v1/assets', { signal: AbortSignal.timeout(2000) });
-            if (prodRes.ok) {
-              workingBase = '';
-            }
+            if (prodRes.ok) workingBase = '';
           } catch (e) {}
         }
 
@@ -149,7 +165,7 @@ function App() {
           }
         }
 
-        if (workingBase) {
+        if (workingBase !== null) {
           const [assets, vulns, threats, controls, riskAssessments, invOpts, scenarios, recs] = await Promise.all([
             fetch(`${workingBase}/api/v1/assets`).then(r => r.json()).catch(() => FALLBACK_DATA.assets),
             fetch(`${workingBase}/api/v1/vulnerabilities`).then(r => r.json()).catch(() => FALLBACK_DATA.vulns),
@@ -180,6 +196,162 @@ function App() {
     fetchData();
   }, []);
 
+  // CRUD Handlers for Assets
+  const handleCreateAsset = async (assetData) => {
+    let created = null;
+    try {
+      created = await api.createAsset(assetData);
+    } catch (e) {}
+
+    const newId = created?.id || Date.now();
+    const newAsset = {
+      id: newId,
+      name: assetData.name,
+      criticality: assetData.criticality.toUpperCase(),
+      business_value: `$${(assetData.valuation / 1000000).toFixed(1)}M`,
+      owner: assetData.business_process || 'SecOps Team'
+    };
+
+    const initialScore = assetData.criticality === 'Critical' ? 88 : assetData.criticality === 'High' ? 72 : assetData.criticality === 'Medium' ? 48 : 25;
+    const newAssessment = {
+      id: newId,
+      asset_id: newId,
+      current_risk_score: initialScore,
+      risk_level: assetData.criticality.toLowerCase(),
+      trend: '+0%'
+    };
+
+    setState(prev => ({
+      ...prev,
+      assets: [newAsset, ...prev.assets],
+      riskAssessments: [newAssessment, ...prev.riskAssessments]
+    }));
+    showToast(`Asset "${assetData.name}" ingested successfully!`);
+  };
+
+  const handleDeleteAsset = async (id, name) => {
+    try {
+      await api.deleteAsset(id);
+    } catch (e) {}
+    setState(prev => ({
+      ...prev,
+      assets: prev.assets.filter(a => a.id !== id),
+      riskAssessments: prev.riskAssessments.filter(r => r.asset_id !== id)
+    }));
+    showToast(`Asset "${name || id}" removed from inventory`, 'warning');
+  };
+
+  // CRUD Handlers for Vulnerabilities
+  const handleCreateVuln = async (vulnData) => {
+    let created = null;
+    try {
+      created = await api.createVulnerability(vulnData);
+    } catch (e) {}
+
+    const targetAsset = state.assets.find(a => a.id === vulnData.affected_asset_id);
+    const newVuln = {
+      id: created?.id || Date.now(),
+      name: vulnData.name,
+      severity: vulnData.severity,
+      affected_asset_id: targetAsset ? targetAsset.name : `Asset #${vulnData.affected_asset_id}`,
+      status: 'Active'
+    };
+
+    setState(prev => ({
+      ...prev,
+      vulns: [newVuln, ...prev.vulns]
+    }));
+    showToast(`Vulnerability "${vulnData.name}" registered!`);
+  };
+
+  const handleDeleteVuln = async (id, name) => {
+    try {
+      await api.deleteVulnerability(id);
+    } catch (e) {}
+    setState(prev => ({
+      ...prev,
+      vulns: prev.vulns.filter(v => v.id !== id)
+    }));
+    showToast(`Vulnerability "${name || id}" marked as resolved`, 'warning');
+  };
+
+  // CRUD Handlers for Threats
+  const handleCreateThreat = async (threatData) => {
+    let created = null;
+    try {
+      created = await api.createThreat(threatData);
+    } catch (e) {}
+
+    const newThreat = {
+      id: created?.id || Date.now(),
+      name: threatData.name,
+      likelihood: threatData.likelihood,
+      impact: Math.min(5, Math.max(1, threatData.likelihood + 1)),
+      category: 'Adversary Campaign'
+    };
+
+    setState(prev => ({
+      ...prev,
+      threats: [newThreat, ...prev.threats]
+    }));
+    showToast(`Threat Vector "${threatData.name}" mapped!`);
+  };
+
+  const handleDeleteThreat = async (id, name) => {
+    try {
+      await api.deleteThreat(id);
+    } catch (e) {}
+    setState(prev => ({
+      ...prev,
+      threats: prev.threats.filter(t => t.id !== id)
+    }));
+    showToast(`Threat vector "${name || id}" decommissioned`, 'warning');
+  };
+
+  // CRUD Handlers for Controls
+  const handleCreateControl = async (controlData) => {
+    let created = null;
+    try {
+      created = await api.createControl(controlData);
+    } catch (e) {}
+
+    const targetAsset = state.assets.find(a => a.id === controlData.target_asset_id);
+    const newControl = {
+      id: created?.id || Date.now(),
+      name: controlData.name,
+      effectiveness: controlData.effectiveness,
+      cost: controlData.cost,
+      target_asset_id: targetAsset ? targetAsset.name : `Asset #${controlData.target_asset_id}`
+    };
+
+    setState(prev => ({
+      ...prev,
+      controls: [newControl, ...prev.controls]
+    }));
+    showToast(`Security Control "${controlData.name}" deployed!`);
+  };
+
+  const handleDeleteControl = async (id, name) => {
+    try {
+      await api.deleteControl(id);
+    } catch (e) {}
+    setState(prev => ({
+      ...prev,
+      controls: prev.controls.filter(c => c.id !== id)
+    }));
+    showToast(`Control safeguard "${name || id}" revoked`, 'warning');
+  };
+
+  // Simulation State Handler
+  const handleSimulationSync = (simEvent) => {
+    setSimState(simEvent);
+    if (simEvent.active) {
+      showToast(`⚡ Incident Simulation ACTIVE: ${simEvent.scenario?.title}`, 'danger');
+    } else if (simEvent.mitigated) {
+      showToast(`✓ Incident Containment Deployed! -${simEvent.residualRiskReduction}% Residual Risk`, 'success');
+    }
+  };
+
   const navigateTo = (pageName, tabKey = 'overview', hashAnchor = '') => {
     setRoute({ page: pageName, tab: tabKey });
     const h = hashAnchor || (pageName === 'dashboard' ? (tabKey === 'overview' ? 'dashboard' : tabKey) : pageName);
@@ -203,8 +375,32 @@ function App() {
     return selectedInvestments[opt.id] ? acc + (opt.cost || 0) : acc;
   }, 0);
 
+  // Computed Risk Assessments reflecting live simulation spike
+  const computedRiskAssessments = state.riskAssessments.map(ra => {
+    const asset = state.assets.find(a => a.id === ra.asset_id);
+    if (simState.active && asset && asset.name.toLowerCase().includes(simState.targetAssetName?.toLowerCase() || '')) {
+      const spiked = Math.min(99, ra.current_risk_score + (simState.riskScoreDelta || 45));
+      return {
+        ...ra,
+        current_risk_score: spiked,
+        risk_level: 'critical',
+        trend: `+${simState.riskScoreDelta}%`
+      };
+    }
+    if (simState.mitigated && asset && asset.name.toLowerCase().includes(simState.targetAssetName?.toLowerCase() || '')) {
+      const lowered = Math.max(15, Math.round(ra.current_risk_score * (1 - (simState.residualRiskReduction || 50) / 100)));
+      return {
+        ...ra,
+        current_risk_score: lowered,
+        risk_level: lowered > 70 ? 'high' : lowered > 40 ? 'medium' : 'low',
+        trend: `-${simState.residualRiskReduction}%`
+      };
+    }
+    return ra;
+  });
+
   const riskLevelMap = {};
-  state.riskAssessments.forEach(ra => {
+  computedRiskAssessments.forEach(ra => {
     riskLevelMap[ra.asset_id] = ra.risk_level;
   });
 
@@ -360,26 +556,28 @@ function App() {
             borderTop: '1px solid var(--stone-100)',
             padding: '0 24px'
           }}>
-            <div style={{
+            <div className="no-scrollbar" style={{
               maxWidth: '1280px',
               margin: '0 auto',
               display: 'flex',
               justifyContent: 'space-between',
               alignItems: 'center',
               gap: '12px',
-              overflowX: 'auto'
+              overflowX: 'auto',
+              scrollbarWidth: 'none'
             }}>
-              <div style={{ display: 'flex', gap: '6px' }}>
+              <div style={{ display: 'flex', gap: '4px' }}>
                 {[
-                  { hash: 'matrix', key: 'matrix', label: '5×5 Risk Matrix' },
+                  { hash: 'matrix', key: 'matrix', label: '5×5 Matrix' },
+                  { hash: 'simulator', key: 'simulator', label: '⚡ Simulator' },
                   { hash: 'assets', key: 'assets', label: 'Assets' },
-                  { hash: 'vuln', key: 'vulns', label: 'Vulnerabilities' },
+                  { hash: 'vuln', key: 'vulns', label: 'Vulns' },
                   { hash: 'threat', key: 'threats', label: 'Threats' },
                   { hash: 'ctrl', key: 'controls', label: 'Controls' },
-                  { hash: 'risk', key: 'overview', label: 'Risk Scoring' },
-                  { hash: 'invest', key: 'invest', label: 'Investment Optimizer' },
+                  { hash: 'risk', key: 'overview', label: 'Scoring' },
+                  { hash: 'invest', key: 'invest', label: 'Optimizer' },
                   { hash: 'scenario', key: 'scenarios', label: 'Scenarios' },
-                  { hash: 'rec', key: 'recommendations', label: 'Recommendations' }
+                  { hash: 'rec', key: 'recommendations', label: 'Recs' }
                 ].map(item => {
                   const isCurrent = route.tab === item.key;
                   return (
@@ -391,14 +589,15 @@ function App() {
                         navigateTo('dashboard', item.key, item.hash);
                       }}
                       style={{
-                        padding: '10px 14px',
+                        padding: '10px 10px',
                         background: 'transparent',
                         textDecoration: 'none',
                         borderBottom: isCurrent ? '3px solid var(--rose-600)' : '3px solid transparent',
                         color: isCurrent ? 'var(--rose-600)' : 'var(--stone-700)',
                         fontWeight: isCurrent ? 600 : 500,
-                        fontSize: '0.84rem',
-                        whiteSpace: 'nowrap'
+                        fontSize: '0.82rem',
+                        whiteSpace: 'nowrap',
+                        transition: 'all 0.15s ease'
                       }}
                     >
                       {item.label}
@@ -407,50 +606,91 @@ function App() {
                 })}
               </div>
 
-              {/* View Toggle */}
+              {/* View Mode Icon Toggle */}
               <div style={{
                 background: 'var(--stone-50)',
                 border: '1px solid var(--stone-100)',
                 borderRadius: 'var(--radius-lg)',
-                padding: '2px',
+                padding: '3px',
                 display: 'flex',
+                alignItems: 'center',
+                gap: '2px',
                 flexShrink: 0
               }}>
                 <button
                   onClick={() => setViewMode('all')}
+                  title="Continuous Scroll Mode (All Sections)"
                   style={{
-                    padding: '4px 10px',
+                    padding: '5px 8px',
                     borderRadius: 'var(--radius-default)',
                     border: 'none',
                     background: viewMode === 'all' ? 'var(--white)' : 'transparent',
                     color: viewMode === 'all' ? 'var(--rose-600)' : 'var(--stone-700)',
-                    fontWeight: 600,
-                    fontSize: '0.75rem',
-                    cursor: 'pointer'
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    cursor: 'pointer',
+                    boxShadow: viewMode === 'all' ? '0 1px 3px rgba(0,0,0,0.1)' : 'none',
+                    transition: 'all 0.15s ease'
                   }}
                 >
-                  All Sections
+                  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+                    <line x1="3" y1="6" x2="21" y2="6"></line>
+                    <line x1="3" y1="12" x2="21" y2="12"></line>
+                    <line x1="3" y1="18" x2="21" y2="18"></line>
+                  </svg>
                 </button>
                 <button
                   onClick={() => setViewMode('tabbed')}
+                  title="Single Tab View Mode"
                   style={{
-                    padding: '4px 10px',
+                    padding: '5px 8px',
                     borderRadius: 'var(--radius-default)',
                     border: 'none',
                     background: viewMode === 'tabbed' ? 'var(--white)' : 'transparent',
                     color: viewMode === 'tabbed' ? 'var(--rose-600)' : 'var(--stone-700)',
-                    fontWeight: 600,
-                    fontSize: '0.75rem',
-                    cursor: 'pointer'
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    cursor: 'pointer',
+                    boxShadow: viewMode === 'tabbed' ? '0 1px 3px rgba(0,0,0,0.1)' : 'none',
+                    transition: 'all 0.15s ease'
                   }}
                 >
-                  Tabbed View
+                  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+                    <rect x="3" y="3" width="18" height="18" rx="2"></rect>
+                    <path d="M3 9h18"></path>
+                  </svg>
                 </button>
               </div>
             </div>
           </div>
         )}
       </header>
+
+      {/* Toast Notification Alert */}
+      {toast && (
+        <div style={{
+          position: 'fixed',
+          bottom: '24px',
+          right: '24px',
+          zIndex: 9999,
+          background: toast.type === 'danger' ? '#dc2626' : toast.type === 'warning' ? '#d97706' : '#15803d',
+          color: '#ffffff',
+          padding: '12px 20px',
+          borderRadius: 'var(--radius-xl)',
+          boxShadow: '0 10px 30px rgba(0, 0, 0, 0.25)',
+          display: 'flex',
+          alignItems: 'center',
+          gap: '10px',
+          fontSize: '0.875rem',
+          fontWeight: 600,
+          animation: 'modalPop 0.2s ease-out'
+        }}>
+          <span>{toast.type === 'danger' ? '⚠️' : toast.type === 'warning' ? '🗑️' : '✓'}</span>
+          <span>{toast.message}</span>
+        </div>
+      )}
 
       {/* PAGE 1: LANDING PAGE */}
       {route.page === 'landing' && (
@@ -559,7 +799,7 @@ function App() {
                   assets={state.assets}
                   threats={state.threats}
                   vulns={state.vulns}
-                  riskAssessments={state.riskAssessments}
+                  riskAssessments={computedRiskAssessments}
                 />
                 <VisualAnalytics
                   assets={state.assets}
@@ -570,22 +810,38 @@ function App() {
               </section>
             )}
 
+            {/* SECTION: LIVE ZERO-DAY INCIDENT SIMULATION SANDBOX */}
+            {(shouldShowSection('simulator') || shouldShowSection('scenarios')) && (
+              <section id="simulator" style={{ scrollMarginTop: '130px' }}>
+                <IncidentSimulator
+                  assets={state.assets}
+                  onApplySimulationState={handleSimulationSync}
+                />
+              </section>
+            )}
+
             {/* SECTION: ASSETS */}
             {shouldShowSection('assets') && (
               <section id="assets" style={{ scrollMarginTop: '130px' }}>
                 <div className="card-glass" style={{ padding: '24px' }}>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px', flexWrap: 'wrap', gap: '12px' }}>
                     <div>
-                      <h2 style={{ fontSize: '1.25rem', color: 'var(--neutral-950)' }}>Enterprise Asset Inventory & Risk Posture</h2>
+                      <h2 style={{ fontSize: '1.25rem', color: 'var(--neutral-950)' }}>Enterprise Asset Inventory & Valuation</h2>
                       <p style={{ fontSize: '0.875rem', color: 'var(--stone-700)', marginTop: '2px' }}>
-                        Real-time risk scoring, criticality ranking, and ownership metrics.
+                        Real-time risk scoring, criticality ranking, financial valuation, and ownership metrics.
                       </p>
                     </div>
+                    <button
+                      className="btn-primary btn-sm"
+                      onClick={() => setActiveModal('asset')}
+                    >
+                      + Ingest Asset
+                    </button>
                   </div>
 
                   <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(320px, 1fr))', gap: '20px' }}>
                     {state.assets.map(asset => {
-                      const ra = state.riskAssessments.find(r => r.asset_id === asset.id);
+                      const ra = computedRiskAssessments.find(r => r.asset_id === asset.id);
                       const rl = ra ? ra.risk_level : (riskLevelMap[asset.id] || 'Low');
                       const score = ra ? ra.current_risk_score : 45;
 
@@ -603,7 +859,16 @@ function App() {
                           <div>
                             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: '10px' }}>
                               <h3 style={{ fontSize: '1rem', color: 'var(--neutral-950)', fontWeight: 600 }}>{asset.name}</h3>
-                              <span className={`badge ${getBadgeClass(rl)}`}>{rl}</span>
+                              <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                                <span className={`badge ${getBadgeClass(rl)}`}>{rl}</span>
+                                <button
+                                  className="btn-del"
+                                  title="Delete Asset"
+                                  onClick={() => handleDeleteAsset(asset.id, asset.name)}
+                                >
+                                  ✕
+                                </button>
+                              </div>
                             </div>
                             <p style={{ fontSize: '0.8125rem', color: 'var(--stone-700)', marginTop: '6px' }}>
                               Owner: {asset.owner || 'SecOps Team'} • Value: {asset.business_value || '$5.0M'}
@@ -613,7 +878,7 @@ function App() {
                           <div style={{ marginTop: '16px' }}>
                             <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.8125rem', marginBottom: '6px' }}>
                               <span style={{ color: 'var(--stone-700)', fontWeight: 500 }}>Risk Score</span>
-                              <span style={{ fontWeight: 700, color: 'var(--rose-700)' }}>{score}/100</span>
+                              <span style={{ fontWeight: 700, color: score >= 80 ? '#dc2626' : 'var(--rose-700)' }}>{score}/100</span>
                             </div>
                             <div style={{ width: '100%', height: '8px', background: 'var(--stone-100)', borderRadius: 'var(--radius-full)', overflow: 'hidden' }}>
                               <div style={{
@@ -638,9 +903,9 @@ function App() {
                             <button
                               className="btn-secondary"
                               style={{ flex: 1, padding: '6px 10px', fontSize: '0.8125rem' }}
-                              onClick={() => navigateTo('dashboard', 'scenarios', 'scenario')}
+                              onClick={() => navigateTo('dashboard', 'simulator', 'simulator')}
                             >
-                              Simulate
+                              Simulate Zero-Day
                             </button>
                           </div>
                         </div>
@@ -655,14 +920,22 @@ function App() {
             {shouldShowSection('vulns') && (
               <section id="vuln" style={{ scrollMarginTop: '130px' }}>
                 <div id="vulns" className="card-glass" style={{ padding: '24px' }}>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px', flexWrap: 'wrap', gap: '12px' }}>
                     <div>
                       <h2 style={{ fontSize: '1.25rem', color: 'var(--neutral-950)' }}>Vulnerability Register & CVE Tracking</h2>
                       <p style={{ fontSize: '0.875rem', color: 'var(--stone-700)', marginTop: '2px' }}>
                         Identified security flaws, severity ratings, and target systems.
                       </p>
                     </div>
-                    <span className="badge badge-high">{state.vulns.length} Active Flaws</span>
+                    <div style={{ display: 'flex', gap: '10px', alignItems: 'center' }}>
+                      <span className="badge badge-high">{state.vulns.length} Active Flaws</span>
+                      <button
+                        className="btn-danger btn-sm"
+                        onClick={() => setActiveModal('vuln')}
+                      >
+                        + Log CVE
+                      </button>
+                    </div>
                   </div>
 
                   <table className="styled-table">
@@ -672,6 +945,7 @@ function App() {
                         <th>CVSS Base Score</th>
                         <th>Affected Asset</th>
                         <th>Remediation Status</th>
+                        <th>Action</th>
                       </tr>
                     </thead>
                     <tbody>
@@ -695,6 +969,15 @@ function App() {
                           <td>
                             <span className="badge badge-medium">{v.status || 'Active'}</span>
                           </td>
+                          <td>
+                            <button
+                              className="btn-del"
+                              title="Resolve Vulnerability"
+                              onClick={() => handleDeleteVuln(v.id, v.name)}
+                            >
+                              Resolve ✕
+                            </button>
+                          </td>
                         </tr>
                       ))}
                     </tbody>
@@ -707,11 +990,19 @@ function App() {
             {shouldShowSection('threats') && (
               <section id="threat" style={{ scrollMarginTop: '130px' }}>
                 <div id="threats" className="card-glass" style={{ padding: '24px' }}>
-                  <div style={{ marginBottom: '16px' }}>
-                    <h2 style={{ fontSize: '1.25rem', color: 'var(--neutral-950)' }}>Threat Matrix Intelligence</h2>
-                    <p style={{ fontSize: '0.875rem', color: 'var(--stone-700)', marginTop: '2px' }}>
-                      Adversary campaign likelihood, attack surfaces, and impact scoring.
-                    </p>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px', flexWrap: 'wrap', gap: '12px' }}>
+                    <div>
+                      <h2 style={{ fontSize: '1.25rem', color: 'var(--neutral-950)' }}>Threat Matrix Intelligence</h2>
+                      <p style={{ fontSize: '0.875rem', color: 'var(--stone-700)', marginTop: '2px' }}>
+                        Adversary campaign likelihood, attack surfaces, and impact scoring.
+                      </p>
+                    </div>
+                    <button
+                      className="btn-warning btn-sm"
+                      onClick={() => setActiveModal('threat')}
+                    >
+                      + Map Threat Vector
+                    </button>
                   </div>
 
                   <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(290px, 1fr))', gap: '16px' }}>
@@ -724,7 +1015,16 @@ function App() {
                       }}>
                         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: '8px' }}>
                           <h3 style={{ fontSize: '0.9375rem', fontWeight: 600 }}>{t.name}</h3>
-                          <span className="badge badge-high">{t.category || 'Threat'}</span>
+                          <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                            <span className="badge badge-high">{t.category || 'Threat'}</span>
+                            <button
+                              className="btn-del"
+                              title="Delete Threat"
+                              onClick={() => handleDeleteThreat(t.id, t.name)}
+                            >
+                              ✕
+                            </button>
+                          </div>
                         </div>
                         <div style={{ marginTop: '16px', display: 'flex', justifyContent: 'space-between', fontSize: '0.875rem' }}>
                           <span style={{ color: 'var(--stone-700)' }}>Likelihood Score:</span>
@@ -745,11 +1045,19 @@ function App() {
             {shouldShowSection('controls') && (
               <section id="ctrl" style={{ scrollMarginTop: '130px' }}>
                 <div id="controls" className="card-glass" style={{ padding: '24px' }}>
-                  <div style={{ marginBottom: '16px' }}>
-                    <h2 style={{ fontSize: '1.25rem', color: 'var(--neutral-950)' }}>Defensive Security Safeguards</h2>
-                    <p style={{ fontSize: '0.875rem', color: 'var(--stone-700)', marginTop: '2px' }}>
-                      Active security controls and efficiency assessment.
-                    </p>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px', flexWrap: 'wrap', gap: '12px' }}>
+                    <div>
+                      <h2 style={{ fontSize: '1.25rem', color: 'var(--neutral-950)' }}>Defensive Security Safeguards</h2>
+                      <p style={{ fontSize: '0.875rem', color: 'var(--stone-700)', marginTop: '2px' }}>
+                        Active security controls and efficiency assessment.
+                      </p>
+                    </div>
+                    <button
+                      className="btn-primary btn-sm"
+                      onClick={() => setActiveModal('control')}
+                    >
+                      + Deploy Control
+                    </button>
                   </div>
 
                   <table className="styled-table">
@@ -759,6 +1067,7 @@ function App() {
                         <th>Effectiveness</th>
                         <th>Annual Cost</th>
                         <th>Protected Target</th>
+                        <th>Action</th>
                       </tr>
                     </thead>
                     <tbody>
@@ -770,6 +1079,15 @@ function App() {
                           </td>
                           <td style={{ fontFamily: 'var(--mono)' }}>${(c.cost || 0).toLocaleString()}</td>
                           <td>{c.target_asset_id}</td>
+                          <td>
+                            <button
+                              className="btn-del"
+                              title="Revoke Control"
+                              onClick={() => handleDeleteControl(c.id, c.name)}
+                            >
+                              Revoke ✕
+                            </button>
+                          </td>
                         </tr>
                       ))}
                     </tbody>
@@ -799,7 +1117,7 @@ function App() {
                       </tr>
                     </thead>
                     <tbody>
-                      {state.riskAssessments.map(ra => {
+                      {computedRiskAssessments.map(ra => {
                         const asset = state.assets.find(a => a.id === ra.asset_id);
                         return (
                           <tr key={ra.id}>
@@ -1015,6 +1333,34 @@ function App() {
               </section>
             )}
           </div>
+
+          {/* Interactive CRUD Modals */}
+          <AssetModal
+            isOpen={activeModal === 'asset'}
+            onClose={() => setActiveModal(null)}
+            onSave={handleCreateAsset}
+          />
+
+          <VulnerabilityModal
+            isOpen={activeModal === 'vuln'}
+            onClose={() => setActiveModal(null)}
+            onSave={handleCreateVuln}
+            assets={state.assets}
+          />
+
+          <ThreatModal
+            isOpen={activeModal === 'threat'}
+            onClose={() => setActiveModal(null)}
+            onSave={handleCreateThreat}
+            assets={state.assets}
+          />
+
+          <ControlModal
+            isOpen={activeModal === 'control'}
+            onClose={() => setActiveModal(null)}
+            onSave={handleCreateControl}
+            assets={state.assets}
+          />
         </main>
       )}
 
