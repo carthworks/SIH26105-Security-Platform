@@ -178,6 +178,12 @@ The project is pre-configured for instant Vercel deployment (serving both the Re
 3. Import your **`zenith`** repository.
 4. Click **"Deploy"** (Vercel automatically detects [vercel.json](file:///c:/Users/tkart/OneDrive/Documents/zenith/zenith/vercel.json), builds the frontend, and packages `api/index.py` as serverless functions).
 
+## 👥 Team & Contributors
+
+| Member Name | Email | GitHub Profile |
+|---|---|---|
+| **Kamalika** | [km4758@srmist.edu.in](mailto:km4758@srmist.edu.in) | [@km4758](https://github.com/km4758) |
+
 ---
 
 ## 📄 License
