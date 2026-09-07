@@ -206,20 +206,21 @@ function App() {
     } catch (e) {}
 
     const newId = created?.id || Date.now();
+    const crit = String(assetData.criticality || 'HIGH');
     const newAsset = {
       id: newId,
       name: assetData.name,
-      criticality: assetData.criticality.toUpperCase(),
+      criticality: crit.toUpperCase(),
       business_value: `$${(assetData.valuation / 1000000).toFixed(1)}M`,
       owner: assetData.business_process || 'SecOps Team'
     };
 
-    const initialScore = assetData.criticality === 'Critical' ? 88 : assetData.criticality === 'High' ? 72 : assetData.criticality === 'Medium' ? 48 : 25;
+    const initialScore = crit.toLowerCase() === 'critical' ? 88 : crit.toLowerCase() === 'high' ? 72 : crit.toLowerCase() === 'medium' ? 48 : 25;
     const newAssessment = {
       id: newId,
       asset_id: newId,
       current_risk_score: initialScore,
-      risk_level: assetData.criticality.toLowerCase(),
+      risk_level: crit.toLowerCase(),
       trend: '+0%'
     };
 

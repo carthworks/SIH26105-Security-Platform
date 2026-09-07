@@ -1,5 +1,27 @@
 import React, { useRef } from 'react';
 
+function formatCriticality(val) {
+  if (!val && val !== 0) return 'HIGH';
+  if (typeof val === 'number') {
+    if (val >= 4) return 'CRITICAL';
+    if (val === 3) return 'HIGH';
+    if (val === 2) return 'MEDIUM';
+    return 'LOW';
+  }
+  return String(val).toUpperCase();
+}
+
+function formatRiskLevel(val) {
+  if (!val && val !== 0) return 'LOW';
+  if (typeof val === 'number') {
+    if (val >= 75) return 'CRITICAL';
+    if (val >= 50) return 'HIGH';
+    if (val >= 25) return 'MEDIUM';
+    return 'LOW';
+  }
+  return String(val).toUpperCase();
+}
+
 export function ExecutiveReportModal({
   isOpen,
   onClose,
@@ -24,10 +46,10 @@ export function ExecutiveReportModal({
   const reportId = `ZENITH-EXEC-${new Date().getFullYear()}-${Math.floor(1000 + Math.random() * 9000)}`;
 
   // Calculations
-  const criticalAssets = assets.filter((a) => a.criticality === 'CRITICAL' || a.criticality === 'Critical');
+  const criticalAssets = assets.filter((a) => formatCriticality(a.criticality) === 'CRITICAL');
   const highVulns = vulns.filter((v) => Number(v.severity) >= 7.0);
   const avgRisk = riskAssessments.length
-    ? Math.round(riskAssessments.reduce((acc, r) => acc + (r.current_risk_score || 0), 0) / riskAssessments.length)
+    ? Math.round(riskAssessments.reduce((acc, r) => acc + (Number(r.current_risk_score) || 0), 0) / riskAssessments.length)
     : 62;
   const totalValuation = assets.reduce((acc, a) => {
     const v = String(a.business_value || '').replace(/[^0-9.]/g, '');
@@ -79,9 +101,9 @@ export function ExecutiveReportModal({
     let csv = 'Report ID,Asset Name,Criticality,Business Value,Current Risk Score,Risk Level\n';
     assets.forEach((a) => {
       const ra = riskAssessments.find((r) => r.asset_id === a.id);
-      const score = ra ? ra.current_risk_score : 50;
-      const level = ra ? ra.risk_level : a.criticality;
-      csv += `"${reportId}","${a.name}","${a.criticality}","${a.business_value || 'N/A'}",${score},"${level}"\n`;
+      const score = ra ? (ra.current_risk_score || 50) : 50;
+      const level = ra ? formatRiskLevel(ra.risk_level) : formatCriticality(a.criticality);
+      csv += `"${reportId}","${a.name || 'Unnamed Asset'}","${formatCriticality(a.criticality)}","${a.business_value || 'N/A'}",${score},"${level}"\n`;
     });
 
     const blob = new Blob([csv], { type: 'text/csv' });
@@ -225,15 +247,16 @@ export function ExecutiveReportModal({
               <tbody>
                 {assets.map((a) => {
                   const ra = riskAssessments.find((r) => r.asset_id === a.id);
-                  const score = ra ? ra.current_risk_score : 50;
-                  const level = ra ? ra.risk_level : a.criticality;
+                  const score = ra ? (ra.current_risk_score || 50) : 50;
+                  const level = ra ? formatRiskLevel(ra.risk_level) : formatCriticality(a.criticality);
+                  const critFormatted = formatCriticality(a.criticality);
                   return (
                     <tr key={a.id}>
-                      <td><strong>{a.name}</strong><br /><small className="text-muted">{a.owner || 'SecOps Team'}</small></td>
-                      <td><span className="report-tier-badge">{a.criticality}</span></td>
+                      <td><strong>{a.name || 'Unnamed Asset'}</strong><br /><small className="text-muted">{a.owner || 'SecOps Team'}</small></td>
+                      <td><span className="report-tier-badge">{critFormatted}</span></td>
                       <td>{a.business_value || '$5.0M'}</td>
                       <td><strong className={score >= 75 ? 'text-danger' : score >= 50 ? 'text-warning' : 'text-success'}>{score} / 100</strong></td>
-                      <td><span className="report-status-badge">{level.toUpperCase()}</span></td>
+                      <td><span className="report-status-badge">{level}</span></td>
                     </tr>
                   );
                 })}
@@ -261,9 +284,9 @@ export function ExecutiveReportModal({
                   <tbody>
                     {vulns.map((v) => (
                       <tr key={v.id}>
-                        <td>{v.name}</td>
-                        <td><span className="report-cvss-tag">{v.severity}</span></td>
-                        <td>{v.affected_asset_id}</td>
+                        <td>{v.name || 'Unknown CVE'}</td>
+                        <td><span className="report-cvss-tag">{v.severity || '5.0'}</span></td>
+                        <td>{String(v.affected_asset_id || 'Global')}</td>
                       </tr>
                     ))}
                   </tbody>
@@ -283,8 +306,8 @@ export function ExecutiveReportModal({
                   <tbody>
                     {threats.map((t) => (
                       <tr key={t.id}>
-                        <td>{t.name}</td>
-                        <td><strong>{t.likelihood} / 5</strong></td>
+                        <td>{t.name || 'Threat Vector'}</td>
+                        <td><strong>{t.likelihood || 3} / 5</strong></td>
                         <td>{t.category || 'Adversary'}</td>
                       </tr>
                     ))}
@@ -312,9 +335,9 @@ export function ExecutiveReportModal({
               <tbody>
                 {recs.map((r, idx) => (
                   <tr key={idx}>
-                    <td><strong>{r.asset_name}</strong></td>
-                    <td><span className={`report-urgency-badge ${String(r.urgency).toLowerCase() === 'critical' ? 'urgency-critical' : 'urgency-high'}`}>{r.urgency}</span></td>
-                    <td>{r.recommendation}</td>
+                    <td><strong>{r.asset_name || `Asset #${r.asset_id || idx + 1}`}</strong></td>
+                    <td><span className={`report-urgency-badge ${String(r.urgency || '').toLowerCase() === 'critical' ? 'urgency-critical' : 'urgency-high'}`}>{String(r.urgency || 'High').toUpperCase()}</span></td>
+                    <td>{r.recommendation || 'Apply defensive safeguard and patch known CVE vulnerabilities.'}</td>
                     <td><strong className="text-success">+High ROI</strong></td>
                   </tr>
                 ))}
@@ -367,3 +390,4 @@ export function ExecutiveReportModal({
     </div>
   );
 }
+
