@@ -10,6 +10,7 @@
 
 ## 🌟 Key Features
 
+- **One-Click Executive PDF / Audit Export**: Generate formal C-level cyber risk and compliance audit briefings (PDF / JSON / CSV) with letterheads, KPI scorecards, risk matrices, Knapsack budget ROI, regulatory standard mappings (NIST CSF 2.0, ISO 27001, SOC 2, CIS Controls), and CISO attestation signature blocks.
 - **Interactive Inventory & Threat CRUD**: Register new enterprise digital assets, log CVE vulnerabilities with CVSS scores, map MITRE ATT&CK threat vectors, and deploy defensive controls via modal dialogs and live backend API sync.
 - **Live Zero-Day Incident Simulation Sandbox**: Real-time adversary attack injection (Log4Shell RCE, FIN7 Ransomware, Layer-7 DDoS, Insider Exfiltration) streaming live telemetry signals, dynamically spiking risk scores and 5x5 heatmap quadrants, and computing instant Knapsack containment mitigations with one-click neutralization.
 - **Continuous Risk Assessment**: Quantifies asset-level risk scores dynamically based on vulnerability severity (CVSS), threat likelihood, and business impact.
@@ -52,6 +53,7 @@ zenith/
 ├── frontend/
 │   ├── src/
 │   │   ├── main.jsx                   # Root application & dashboard view
+│   │   ├── ExecutiveReportModal.jsx   # One-Click C-level audit & PDF export
 │   │   ├── CrudModals.jsx             # Asset, CVE, Threat & Control CRUD modals
 │   │   ├── IncidentSimulator.jsx      # Live Zero-Day attack simulation sandbox
 │   │   ├── LandingPage.jsx            # Platform landing showcase page

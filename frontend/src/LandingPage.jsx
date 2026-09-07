@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { CyberGlobe } from './CyberGlobe';
 
 export default function LandingPage({ onNavigate }) {
   const [demoBudget, setDemoBudget] = useState(50000);
@@ -16,83 +17,98 @@ export default function LandingPage({ onNavigate }) {
       <section style={{
         maxWidth: '1280px',
         margin: '0 auto',
-        padding: '60px 24px 80px',
-        textAlign: 'center',
+        padding: '50px 24px 70px',
         position: 'relative',
         zIndex: 1
       }}>
-        {/* Pill Badge */}
-        <div style={{
-          display: 'inline-flex',
-          alignItems: 'center',
-          gap: '8px',
-          padding: '6px 16px',
-          borderRadius: 'var(--radius-full)',
-          background: 'var(--stone-50)',
-          border: '1px solid var(--stone-100)',
-          fontSize: '0.8125rem',
-          fontWeight: 600,
-          color: 'var(--rose-700)',
-          marginBottom: '24px',
-          boxShadow: 'var(--shadow-xs)'
-        }}>
-          <span style={{
-            width: '8px',
-            height: '8px',
-            borderRadius: '50%',
-            background: 'var(--rose-600)',
-            boxShadow: '0 0 8px var(--rose-600)'
-          }}></span>
-          SIH26105 AI Cyber Defense Platform
-        </div>
+        {/* Two-Column Hero Grid: Left Content, Right Rotating Cyber Globe */}
+        <div className="hero-two-col-grid">
+          {/* Left Column: Headings & Action CTAs */}
+          <div>
+            {/* Pill Badge */}
+            <div style={{
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: '8px',
+              padding: '6px 16px',
+              borderRadius: 'var(--radius-full)',
+              background: 'var(--stone-50)',
+              border: '1px solid var(--stone-100)',
+              fontSize: '0.8125rem',
+              fontWeight: 600,
+              color: 'var(--rose-700)',
+              marginBottom: '20px',
+              boxShadow: 'var(--shadow-xs)'
+            }}>
+              <span style={{
+                width: '8px',
+                height: '8px',
+                borderRadius: '50%',
+                background: 'var(--rose-600)',
+                boxShadow: '0 0 8px var(--rose-600)'
+              }}></span>
+              SIH26105 AI Cyber Defense Platform
+            </div>
 
-        {/* Hero Title */}
-        <h1 style={{
-          fontSize: 'clamp(2.2rem, 5vw, 3.75rem)',
-          fontWeight: 700,
-          lineHeight: 1.15,
-          letterSpacing: '-0.03em',
-          maxWidth: '900px',
-          margin: '0 auto 20px',
-          color: 'var(--neutral-950)'
-        }}>
-          Continuous Cyber Risk Quantification &{' '}
-          <span className="text-gradient">Investment Optimization</span>
-        </h1>
+            {/* Hero Title */}
+            <h1 style={{
+              fontSize: 'clamp(2.1rem, 4.2vw, 3.4rem)',
+              fontWeight: 700,
+              lineHeight: 1.15,
+              letterSpacing: '-0.03em',
+              margin: '0 0 20px 0',
+              color: 'var(--neutral-950)'
+            }}>
+              Continuous Cyber Risk Quantification &{' '}
+              <span className="text-gradient">Investment Optimization</span>
+            </h1>
 
-        {/* Hero Subtitle */}
-        <p style={{
-          fontSize: 'clamp(1rem, 2vw, 1.2rem)',
-          color: 'var(--stone-700)',
-          maxWidth: '720px',
-          margin: '0 auto 36px',
-          lineHeight: 1.6
-        }}>
-          Convert subjective security assessments into real-time financial risk scores.
-          Mathematically optimize your defensive budget with knapsack ROI allocation and Monte Carlo attack simulations.
-        </p>
+            {/* Hero Subtitle */}
+            <p style={{
+              fontSize: 'clamp(0.95rem, 1.8vw, 1.125rem)',
+              color: 'var(--stone-700)',
+              margin: '0 0 32px 0',
+              lineHeight: 1.6
+            }}>
+              Convert subjective security assessments into real-time financial risk scores.
+              Mathematically optimize your defensive budget with knapsack ROI allocation and Monte Carlo attack simulations.
+            </p>
 
-        {/* Action Buttons */}
-        <div style={{ display: 'flex', justifyContent: 'center', gap: '16px', flexWrap: 'wrap', marginBottom: '60px' }}>
-          <button
-            className="btn-primary"
-            style={{ padding: '14px 28px', fontSize: '1rem' }}
-            onClick={() => onNavigate('dashboard')}
-          >
-            Launch Risk Dashboard →
-          </button>
-          <button
-            className="btn-secondary"
-            style={{ padding: '14px 28px', fontSize: '1rem' }}
-            onClick={() => onNavigate('how-it-works')}
-          >
-            📖 How It Works & Architecture
-          </button>
+            {/* Action Buttons */}
+            <div style={{ display: 'flex', gap: '14px', flexWrap: 'wrap', marginBottom: '28px' }}>
+              <button
+                className="btn-primary"
+                style={{ padding: '14px 28px', fontSize: '0.95rem' }}
+                onClick={() => onNavigate('dashboard')}
+              >
+                Launch Risk Dashboard →
+              </button>
+              <button
+                className="btn-secondary"
+                style={{ padding: '14px 28px', fontSize: '0.95rem' }}
+                onClick={() => onNavigate('how-it-works')}
+              >
+                📖 How It Works & Architecture
+              </button>
+            </div>
+
+            {/* Quick Trust Badges */}
+            <div style={{ display: 'flex', gap: '20px', flexWrap: 'wrap', fontSize: '0.8rem', color: 'var(--stone-700)' }}>
+              <span>✓ <strong>99.4%</strong> ATT&CK Precision</span>
+              <span>✓ <strong>Real-Time</strong> Telemetry</span>
+              <span>✓ <strong>Knapsack</strong> ROI Engine</span>
+            </div>
+          </div>
+
+          {/* Right Column: 3D Rotating Cyber Attack Globe */}
+          <div>
+            <CyberGlobe />
+          </div>
         </div>
 
         {/* Live Interactive Hero Preview Card */}
         <div className="card-glass" style={{
-          maxWidth: '960px',
+          maxWidth: '1000px',
           margin: '0 auto',
           padding: '32px',
           textAlign: 'left',

@@ -129,4 +129,10 @@ export const api = {
     const res = await fetch(`${API_BASE}/api/v1/recommendations/investment/${budget}`);
     return res.ok ? await res.json() : [];
   },
+
+  // Executive Audit Report
+  getExecutiveAuditReport: async () => {
+    const res = await fetch(`${API_BASE}/api/v1/reports/executive-audit`);
+    return res.ok ? await res.json() : null;
+  },
 };

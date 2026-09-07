@@ -368,3 +368,57 @@ def compare_scenarios_api(scenario_ids: str = ""):
     scenario_ids_list = [int(x) for x in scenario_ids.split(",") if x.strip()] if scenario_ids else []
     comparison = compare_scenarios(scenario_ids_list)
     return comparison
+
+
+@app.get("/api/v1/reports/executive-audit")
+def get_executive_audit_report():
+    """Generate comprehensive executive cyber risk & compliance audit report."""
+    conn = get_connection()
+    cursor = conn.cursor()
+    
+    # Assets
+    cursor.execute("SELECT id, name, criticality, value_range, business_process FROM assets")
+    assets = [
+        {"id": r[0], "name": r[1], "criticality": r[2], "value_range": r[3], "business_process": r[4]}
+        for r in cursor.fetchall()
+    ]
+    
+    # Vulnerabilities
+    cursor.execute("SELECT id, name, severity, affected_asset_id FROM vulnerabilities")
+    vulns = [
+        {"id": r[0], "name": r[1], "severity": r[2], "affected_asset_id": r[3]}
+        for r in cursor.fetchall()
+    ]
+    
+    # Threats
+    cursor.execute("SELECT id, name, likelihood, target_asset_id FROM threats")
+    threats = [
+        {"id": r[0], "name": r[1], "likelihood": r[2], "target_asset_id": r[3]}
+        for r in cursor.fetchall()
+    ]
+    
+    # Controls
+    cursor.execute("SELECT id, name, effectiveness, cost, target_asset_id FROM controls")
+    controls = [
+        {"id": r[0], "name": r[1], "effectiveness": r[2], "cost": r[3], "target_asset_id": r[4]}
+        for r in cursor.fetchall()
+    ]
+    conn.close()
+    
+    # Recommendations
+    recs = get_recommendations()
+    
+    return {
+        "report_id": f"ZENITH-AUDIT-{abs(hash(str(len(assets)) + str(len(vulns)))) % 100000:05d}",
+        "classification": "CONFIDENTIAL // C-LEVEL EXECUTIVE CYBER RISK ASSESSMENT",
+        "standard_alignment": ["NIST CSF 2.0", "ISO/IEC 27001:2022", "SOC 2 Type II", "CIS Controls v8"],
+        "asset_count": len(assets),
+        "vulnerability_count": len(vulns),
+        "threat_count": len(threats),
+        "control_count": len(controls),
+        "assets": assets,
+        "vulnerabilities": vulns,
+        "threats": threats,
+        "controls": controls,
+        "recommendations": recs
+    }

@@ -8,6 +8,7 @@ import VisualAnalytics from './VisualAnalytics';
 import { NotFound404, ServerError500, ErrorBoundary } from './ErrorPages';
 import { AssetModal, VulnerabilityModal, ThreatModal, ControlModal } from './CrudModals';
 import { IncidentSimulator } from './IncidentSimulator';
+import { ExecutiveReportModal } from './ExecutiveReportModal';
 import { api } from './api';
 
 // High-fidelity fallback dataset for cyber risk quantification
@@ -105,6 +106,7 @@ function App() {
   const [selectedInvestments, setSelectedInvestments] = useState({ 1: true, 2: true, 4: true });
   const [backendOnline, setBackendOnline] = useState(false);
   const [activeModal, setActiveModal] = useState(null); // 'asset' | 'vuln' | 'threat' | 'control' | null
+  const [isReportModalOpen, setIsReportModalOpen] = useState(false);
   const [toast, setToast] = useState(null);
   const [simState, setSimState] = useState({
     active: false,
@@ -522,6 +524,28 @@ function App() {
               }}
             >
               How It Works & Docs
+            </button>
+            <button
+              onClick={() => setIsReportModalOpen(true)}
+              style={{
+                background: 'linear-gradient(135deg, var(--rose-600) 0%, var(--rose-800) 100%)',
+                color: 'var(--white)',
+                border: 'none',
+                borderRadius: 'var(--radius-lg)',
+                padding: '8px 14px',
+                fontWeight: 600,
+                fontSize: '0.875rem',
+                cursor: 'pointer',
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: '6px',
+                boxShadow: '0 4px 12px rgba(225, 29, 63, 0.25)',
+                transition: 'all 0.2s ease'
+              }}
+              title="Generate C-Level Executive Cyber Risk & Compliance Audit Report"
+            >
+              <span>📄</span>
+              <span>Executive Audit PDF</span>
             </button>
           </nav>
 
@@ -1363,6 +1387,20 @@ function App() {
           />
         </main>
       )}
+
+      {/* C-Level Executive Cyber Risk & Compliance Audit Report Modal */}
+      <ExecutiveReportModal
+        isOpen={isReportModalOpen}
+        onClose={() => setIsReportModalOpen(false)}
+        assets={state.assets}
+        vulns={state.vulns}
+        threats={state.threats}
+        controls={state.controls}
+        riskAssessments={computedRiskAssessments}
+        invOpts={state.invOpts}
+        budget={budget}
+        recs={state.recs}
+      />
 
       {/* Global Footer */}
       <footer style={{
